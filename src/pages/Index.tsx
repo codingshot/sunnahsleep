@@ -19,7 +19,8 @@ import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { useAlarms } from '@/hooks/useAlarms';
 import { duas, lastTwoAyahBaqarah, threeQuls } from '@/data/checklistData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets, Plus, Clock } from 'lucide-react';
+import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets, Plus, Clock, Moon } from 'lucide-react';
+import { CountdownTimer } from '@/components/CountdownTimer';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -206,9 +207,12 @@ const Index = () => {
                     Pray Isha
                   </h2>
                   {prayerTimes && (
-                    <span className="text-xs text-cream-dim">
-                      {prayerTimes.isha}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-cream-dim">
+                        {prayerTimes.isha}
+                      </span>
+                      <CountdownTimer targetTime={prayerTimes.isha} />
+                    </div>
                   )}
                 </div>
                 <div className="space-y-3">
@@ -232,13 +236,29 @@ const Index = () => {
                 </div>
               </section>
 
-              {/* Step 2: Preparation */}
+              {/* Step 2: Preparation (Bedtime) */}
               <section aria-labelledby="preparation-heading">
                 <div className="flex items-center justify-between mb-3">
                   <h2 id="preparation-heading" className="text-sm font-semibold text-gold uppercase tracking-wider flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-gold/20 text-gold text-xs flex items-center justify-center">2</span>
-                    Preparation
+                    <Moon className="h-4 w-4" />
+                    Bedtime Preparation
                   </h2>
+                  {prayerTimes && (() => {
+                    // Calculate bedtime (30 min after Isha)
+                    const [h, m] = prayerTimes.isha.split(':').map(Number);
+                    const bedtime = new Date();
+                    bedtime.setHours(h, m + 30, 0, 0);
+                    const bedtimeStr = `${bedtime.getHours().toString().padStart(2, '0')}:${bedtime.getMinutes().toString().padStart(2, '0')}`;
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-cream-dim">
+                          Bed: {bedtime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                        </span>
+                        <CountdownTimer targetTime={bedtimeStr} />
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="space-y-3">
                   {bedtimeItems.filter(i => i.category === 'preparation' || i.category === 'position').map((item) => (
