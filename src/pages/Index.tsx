@@ -11,6 +11,7 @@ import { QailulahCard } from '@/components/QailulahCard';
 import { TahajjudCard } from '@/components/TahajjudCard';
 import { SleepTrackerCard } from '@/components/SleepTrackerCard';
 import { SleepTimeCalculator } from '@/components/SleepTimeCalculator';
+import { SleepScheduleInfo } from '@/components/SleepScheduleInfo';
 import { AlarmsCard } from '@/components/AlarmsCard';
 import { CompletionCelebration } from '@/components/CompletionCelebration';
 import { useChecklist } from '@/hooks/useChecklist';
@@ -75,10 +76,24 @@ const Index = () => {
       <div className="max-w-lg mx-auto pb-8">
         <Header streak={streak} />
 
-        {/* Progress Section */}
+        {/* Progress Section with Sleep Schedule */}
         <div className="px-6 mb-8">
-          <div className="flex items-center justify-center">
-            <ProgressRing progress={progressPercentage} />
+          <div className="flex items-center gap-4">
+            {/* Progress Ring - Left Side */}
+            <div className="flex-shrink-0">
+              <ProgressRing progress={progressPercentage} />
+            </div>
+            
+            {/* Sleep Schedule Info - Right Side */}
+            {prayerTimes && (
+              <div className="flex-1 min-w-0">
+                <SleepScheduleInfo 
+                  prayerTimes={prayerTimes} 
+                  location={location}
+                  onLocationClick={() => setShowLocationSearch(true)}
+                />
+              </div>
+            )}
           </div>
         </div>
 
