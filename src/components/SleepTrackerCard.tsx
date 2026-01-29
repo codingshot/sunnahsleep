@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Moon, Sun, Clock, TrendingUp, Check, X, Bed, Activity } from 'lucide-react';
+import { Moon, Sun, Clock, Check, X, Bed, Activity, BookOpen, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSleepTracker, SleepRecord } from '@/hooks/useSleepTracker';
+import { useSleepDiary } from '@/hooks/useSleepDiary';
+import { SleepDiaryDialog, DiaryEntry } from '@/components/SleepDiaryDialog';
 
 interface SleepTrackerCardProps {
   onIshaChecked?: boolean;
@@ -20,12 +22,17 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
     formatDuration,
   } = useSleepTracker();
 
+  const { saveEntry, getRecentEntries, getEntryByDate } = useSleepDiary();
+
   const [showWakeDialog, setShowWakeDialog] = useState(false);
+  const [showDiaryDialog, setShowDiaryDialog] = useState(false);
+  const [selectedDiaryDate, setSelectedDiaryDate] = useState<string>('');
   const [madeFajr, setMadeFajr] = useState(false);
   const [quality, setQuality] = useState<SleepRecord['quality']>(null);
 
   const stats = getStats();
   const recentRecords = getRecentRecords(5);
+  const recentDiaryEntries = getRecentEntries(3);
 
   const handleStartSleep = () => {
     startSleep(onIshaChecked || false);
@@ -40,6 +47,19 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
     setShowWakeDialog(false);
     setMadeFajr(false);
     setQuality(null);
+    
+    // Prompt to add diary entry
+    setSelectedDiaryDate(new Date().toISOString().split('T')[0]);
+    setShowDiaryDialog(true);
+  };
+
+  const handleOpenDiary = (date?: string) => {
+    setSelectedDiaryDate(date || new Date().toISOString().split('T')[0]);
+    setShowDiaryDialog(true);
+  };
+
+  const handleSaveDiary = (entry: Omit<DiaryEntry, 'id' | 'createdAt'>) => {
+    saveEntry(entry);
   };
 
   const qualityOptions: { value: SleepRecord['quality']; label: string; emoji: string }[] = [
@@ -56,10 +76,19 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
           <div className="p-2 rounded-lg bg-gold/10">
             <Bed className="h-5 w-5 text-gold" />
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="text-lg font-semibold text-foreground">Sleep Tracker</h3>
             <p className="text-sm text-cream-dim">Track your sleep and prayer adherence</p>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleOpenDiary()}
+            className="text-gold hover:bg-gold/10"
+          >
+            <BookOpen className="h-4 w-4 mr-1" />
+            Diary
+          </Button>
         </div>
 
         {/* Current Sleep Status */}
@@ -205,6 +234,44 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
           </div>
         </div>
 
+        {/* Recent Diary Entries */}
+        {recentDiaryEntries.length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              Recent Diary Entries
+            </p>
+            <div className="space-y-2">
+              {recentDiaryEntries.map((entry) => (
+                <button
+                  key={entry.id}
+                  onClick={() => handleOpenDiary(entry.date)}
+                  className="w-full p-3 rounded-lg bg-secondary/20 border border-border flex items-center justify-between hover:border-gold/30 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-cream-dim">
+                      {new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </span>
+                    {entry.mood && (
+                      <span className="text-sm">
+                        {entry.mood === 'great' ? '😊' : entry.mood === 'good' ? '🙂' : entry.mood === 'okay' ? '😐' : entry.mood === 'tired' ? '😴' : '😫'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {entry.dreamType && entry.dreamType !== 'none' && (
+                      <span className="text-xs text-gold/70">
+                        {entry.dreamType === 'good' ? '✨ Good dream' : entry.dreamType === 'bad' ? '😰' : '💭'}
+                      </span>
+                    )}
+                    <BookOpen className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Recent Records */}
         {recentRecords.length > 0 && (
           <div className="space-y-2">
@@ -236,6 +303,15 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
             ))}
           </div>
         )}
+
+        {/* Sleep Diary Dialog */}
+        <SleepDiaryDialog
+          isOpen={showDiaryDialog}
+          onClose={() => setShowDiaryDialog(false)}
+          onSave={handleSaveDiary}
+          existingEntry={getEntryByDate(selectedDiaryDate) || undefined}
+          date={selectedDiaryDate}
+        />
       </div>
     </div>
   );

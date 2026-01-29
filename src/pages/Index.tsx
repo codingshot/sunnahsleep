@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -10,6 +10,7 @@ import { QuranVerseCard } from '@/components/QuranVerseCard';
 import { QailulahCard } from '@/components/QailulahCard';
 import { TahajjudCard } from '@/components/TahajjudCard';
 import { SleepTrackerCard } from '@/components/SleepTrackerCard';
+import { SleepTimeCalculator } from '@/components/SleepTimeCalculator';
 import { AlarmsCard } from '@/components/AlarmsCard';
 import { CompletionCelebration } from '@/components/CompletionCelebration';
 import { useChecklist } from '@/hooks/useChecklist';
@@ -17,7 +18,8 @@ import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { useAlarms } from '@/hooks/useAlarms';
 import { duas, lastTwoAyahBaqarah, threeQuls } from '@/data/checklistData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download } from 'lucide-react';
+import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const {
@@ -49,6 +51,8 @@ const Index = () => {
 
   const { alarms } = useAlarms();
   const enabledAlarmsCount = alarms.filter(a => a.enabled).length;
+
+  const [showLocationSearch, setShowLocationSearch] = useState(false);
 
   // Auto-initialize prayer times on mount
   useEffect(() => {
@@ -132,7 +136,22 @@ const Index = () => {
                 </h2>
                 <div className="space-y-3">
                   {preparationItems.map((item) => (
-                    <ChecklistCard key={item.id} item={item} onToggle={toggleItem} />
+                    <div key={item.id}>
+                      <ChecklistCard item={item} onToggle={toggleItem} />
+                      {/* Add Wudu guide link for the wudu item */}
+                      {item.id === 'wudu' && (
+                        <Link to="/wudu">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="mt-2 text-gold hover:bg-gold/10 w-full justify-start"
+                          >
+                            <Droplets className="h-4 w-4 mr-2" />
+                            Learn How to Perform Wudu →
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                   ))}
                 </div>
               </section>
@@ -247,6 +266,13 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="sleep" className="space-y-4">
+              {/* Sleep Time Calculator - Shows bedtime and wake time */}
+              <SleepTimeCalculator
+                prayerTimes={prayerTimes}
+                location={location}
+                onLocationClick={() => setShowLocationSearch(true)}
+              />
+
               <SleepTrackerCard onIshaChecked={isIshaCompleted} />
 
               <TahajjudCard
@@ -301,6 +327,11 @@ const Index = () => {
             <Link to="/terms" className="hover:text-gold transition-colors">Terms</Link>
             <span aria-hidden="true">•</span>
             <Link to="/legal" className="hover:text-gold transition-colors">Legal</Link>
+            <span aria-hidden="true">•</span>
+            <Link to="/wudu" className="hover:text-gold transition-colors flex items-center gap-1">
+              <Droplets className="h-3 w-3" />
+              Wudu Guide
+            </Link>
             <span aria-hidden="true">•</span>
             <Link to="/install" className="hover:text-gold transition-colors flex items-center gap-1">
               <Download className="h-3 w-3" />
