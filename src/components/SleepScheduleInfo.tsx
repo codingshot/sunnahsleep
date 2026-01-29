@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Moon, Sun, Clock, MapPin } from 'lucide-react';
 import { PrayerTimes } from '@/types/checklist';
 import { cn } from '@/lib/utils';
+import { LocationUpdateDialog } from './LocationUpdateDialog';
+import { LocationSearchResult } from '@/hooks/usePrayerTimes';
 
 interface LocationSettings {
   mode: 'auto' | 'manual';
@@ -11,17 +14,36 @@ interface LocationSettings {
   timezone: string | null;
 }
 
+interface AlarmInfo {
+  id: string;
+  name: string;
+  time: string;
+  type: string;
+}
+
 interface SleepScheduleInfoProps {
   prayerTimes: PrayerTimes;
   location: LocationSettings;
-  onLocationClick: () => void;
+  alarms?: AlarmInfo[];
+  onSearchCity: (query: string) => Promise<LocationSearchResult[]>;
+  onSetLocation: (lat: number, lng: number, city: string, country: string) => Promise<void>;
+  onResetLocation: () => Promise<void>;
+  onUpdateAlarms?: (newPrayerTimes: PrayerTimes) => void;
+  getNewPrayerTimes?: (lat: number, lng: number) => Promise<PrayerTimes | null>;
 }
 
 export function SleepScheduleInfo({ 
   prayerTimes, 
-  location, 
-  onLocationClick 
+  location,
+  alarms = [],
+  onSearchCity,
+  onSetLocation,
+  onResetLocation,
+  onUpdateAlarms,
+  getNewPrayerTimes,
 }: SleepScheduleInfoProps) {
+  const [showLocationDialog, setShowLocationDialog] = useState(false);
+
   // Calculate recommended bedtime (30 min after Isha)
   const parseTime = (timeStr: string): Date => {
     const [hours, minutes] = timeStr.split(':').map(Number);
@@ -60,49 +82,65 @@ export function SleepScheduleInfo({
   // Determine sleep quality indicator
   const getSleepQuality = () => {
     const totalMinutes = sleepHours * 60 + sleepMinutes;
-    if (totalMinutes >= 420) return { color: 'text-green-400' };
+    if (totalMinutes >= 420) return { color: 'text-green-500' };
     if (totalMinutes >= 360) return { color: 'text-gold' };
-    if (totalMinutes >= 300) return { color: 'text-orange-400' };
-    return { color: 'text-red-400' };
+    if (totalMinutes >= 300) return { color: 'text-amber-500' };
+    return { color: 'text-destructive' };
   };
 
   const quality = getSleepQuality();
 
   return (
-    <div className="space-y-2">
-      {/* Bedtime */}
-      <div className="flex items-center gap-2">
-        <Moon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-        <span className="text-xs text-muted-foreground">Bed:</span>
-        <span className="text-sm font-medium text-foreground">{formatTime(bedtime)}</span>
+    <>
+      <div className="space-y-2">
+        {/* Bedtime */}
+        <div className="flex items-center gap-2">
+          <Moon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+          <span className="text-xs text-muted-foreground">Bed:</span>
+          <span className="text-sm font-medium text-foreground">{formatTime(bedtime)}</span>
+        </div>
+        
+        {/* Wake Time */}
+        <div className="flex items-center gap-2">
+          <Sun className="h-3.5 w-3.5 text-gold flex-shrink-0" />
+          <span className="text-xs text-muted-foreground">Wake:</span>
+          <span className="text-sm font-medium text-foreground">{formatTime(wakeTime)}</span>
+        </div>
+        
+        {/* Estimated Sleep */}
+        <div className="flex items-center gap-2">
+          <Clock className="h-3.5 w-3.5 text-gold flex-shrink-0" />
+          <span className="text-xs text-muted-foreground">Sleep:</span>
+          <span className={cn("text-sm font-semibold", quality.color)}>
+            {sleepHours}h {sleepMinutes}m
+          </span>
+        </div>
+        
+        {/* Location - Click to update */}
+        <button 
+          onClick={() => setShowLocationDialog(true)}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-gold transition-colors group"
+        >
+          <MapPin className="h-3 w-3 group-hover:text-gold" />
+          <span className="truncate max-w-[120px]">
+            {location.city || 'Set location'}
+          </span>
+        </button>
       </div>
-      
-      {/* Wake Time */}
-      <div className="flex items-center gap-2">
-        <Sun className="h-3.5 w-3.5 text-gold flex-shrink-0" />
-        <span className="text-xs text-muted-foreground">Wake:</span>
-        <span className="text-sm font-medium text-foreground">{formatTime(wakeTime)}</span>
-      </div>
-      
-      {/* Estimated Sleep */}
-      <div className="flex items-center gap-2">
-        <Clock className="h-3.5 w-3.5 text-gold flex-shrink-0" />
-        <span className="text-xs text-muted-foreground">Sleep:</span>
-        <span className={cn("text-sm font-semibold", quality.color)}>
-          {sleepHours}h {sleepMinutes}m
-        </span>
-      </div>
-      
-      {/* Location */}
-      <button 
-        onClick={onLocationClick}
-        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-gold transition-colors group"
-      >
-        <MapPin className="h-3 w-3 group-hover:text-gold" />
-        <span className="truncate max-w-[120px]">
-          {location.city || 'Set location'}
-        </span>
-      </button>
-    </div>
+
+      {/* Location Update Dialog */}
+      <LocationUpdateDialog
+        isOpen={showLocationDialog}
+        onClose={() => setShowLocationDialog(false)}
+        currentLocation={location}
+        currentPrayerTimes={prayerTimes}
+        alarms={alarms}
+        onSearchCity={onSearchCity}
+        onSetLocation={onSetLocation}
+        onResetLocation={onResetLocation}
+        onUpdateAlarms={onUpdateAlarms}
+        getNewPrayerTimes={getNewPrayerTimes}
+      />
+    </>
   );
 }
