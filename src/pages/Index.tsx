@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { ProgressRing } from '@/components/ProgressRing';
 import { ChecklistCard } from '@/components/ChecklistCard';
@@ -7,12 +8,15 @@ import { AyatKursiCard } from '@/components/AyatKursiCard';
 import { QuranVerseCard } from '@/components/QuranVerseCard';
 import { QailulahCard } from '@/components/QailulahCard';
 import { TahajjudCard } from '@/components/TahajjudCard';
+import { SleepTrackerCard } from '@/components/SleepTrackerCard';
+import { AlarmsCard } from '@/components/AlarmsCard';
 import { CompletionCelebration } from '@/components/CompletionCelebration';
 import { useChecklist } from '@/hooks/useChecklist';
 import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { duas, lastTwoAyahBaqarah, threeQuls } from '@/data/checklistData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, BookOpen, Circle, Clock, Moon, BookOpenCheck } from 'lucide-react';
+import { ListChecks, BookOpen, Circle, Clock, Moon, BookOpenCheck, Bed, Bell, ExternalLink } from 'lucide-react';
+import { useEffect } from 'react';
 
 const Index = () => {
   const {
@@ -30,17 +34,33 @@ const Index = () => {
     prayerTimes,
     tahajjudSettings,
     qailulahSettings,
+    location,
     loading,
     initializePrayerTimes,
     toggleTahajjud,
     updateQailulah,
     getRecommendedQailulahTime,
+    getTimeBeforeFajr,
+    setManualLocation,
+    resetToAutoLocation,
+    searchCity,
   } = usePrayerTimes();
+
+  // Auto-initialize prayer times on mount
+  useEffect(() => {
+    if (!prayerTimes) {
+      initializePrayerTimes();
+    }
+  }, [prayerTimes, initializePrayerTimes]);
 
   // Group items by category
   const preparationItems = items.filter((i) => i.category === 'preparation');
   const recitationItems = items.filter((i) => i.category === 'recitation');
   const dhikrItems = items.filter((i) => i.category === 'dhikr');
+
+  // Check if Isha is completed
+  const ishaItem = items.find(i => i.id === 'ayat-kursi'); // Using as proxy for bedtime prayers
+  const isIshaCompleted = ishaItem?.completed || false;
 
   return (
     <div className="min-h-screen bg-gradient-night islamic-pattern">
@@ -57,34 +77,36 @@ const Index = () => {
         {/* Main Content */}
         <div className="px-6">
           <Tabs defaultValue="checklist" className="w-full">
-            <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1 grid grid-cols-4">
+            <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1 grid grid-cols-5">
               <TabsTrigger
                 value="checklist"
-                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs sm:text-sm"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
               >
-                <ListChecks className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Checklist</span>
+                <ListChecks className="h-4 w-4" />
               </TabsTrigger>
               <TabsTrigger
                 value="recitations"
-                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs sm:text-sm"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
               >
-                <BookOpenCheck className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Recite</span>
+                <BookOpenCheck className="h-4 w-4" />
               </TabsTrigger>
               <TabsTrigger
                 value="tasbih"
-                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs sm:text-sm"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
               >
-                <Circle className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Tasbih</span>
+                <Circle className="h-4 w-4" />
               </TabsTrigger>
               <TabsTrigger
-                value="schedule"
-                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs sm:text-sm"
+                value="sleep"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
               >
-                <Clock className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Schedule</span>
+                <Bed className="h-4 w-4" />
+              </TabsTrigger>
+              <TabsTrigger
+                value="alarms"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
+              >
+                <Bell className="h-4 w-4" />
               </TabsTrigger>
             </TabsList>
 
@@ -205,7 +227,9 @@ const Index = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="schedule" className="space-y-4">
+            <TabsContent value="sleep" className="space-y-4">
+              <SleepTrackerCard onIshaChecked={isIshaCompleted} />
+
               <TahajjudCard
                 settings={tahajjudSettings}
                 prayerTimes={prayerTimes}
@@ -220,6 +244,17 @@ const Index = () => {
                 onUpdateSettings={updateQailulah}
               />
             </TabsContent>
+
+            <TabsContent value="alarms" className="space-y-4">
+              <AlarmsCard
+                prayerTimes={prayerTimes}
+                location={location}
+                onSearchCity={searchCity}
+                onSetLocation={setManualLocation}
+                onResetLocation={resetToAutoLocation}
+                getTimeBeforeFajr={getTimeBeforeFajr}
+              />
+            </TabsContent>
           </Tabs>
         </div>
 
@@ -231,7 +266,28 @@ const Index = () => {
           <p className="text-cream-dim text-sm italic">
             "And it is He who has made the night for you as clothing and sleep [a means for] rest"
           </p>
-          <p className="text-muted-foreground text-xs mt-1">Surah Al-Furqan 25:47</p>
+          <p className="text-muted-foreground text-xs mt-1 mb-4">Surah Al-Furqan 25:47</p>
+          
+          {/* Footer links */}
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+            <Link to="/privacy" className="hover:text-gold transition-colors">Privacy</Link>
+            <span>•</span>
+            <Link to="/terms" className="hover:text-gold transition-colors">Terms</Link>
+            <span>•</span>
+            <Link to="/legal" className="hover:text-gold transition-colors">Legal</Link>
+          </div>
+          
+          <p className="text-muted-foreground text-xs mt-3">
+            Made with ❤️ by{' '}
+            <a 
+              href="https://ummah.build" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gold hover:underline inline-flex items-center gap-1"
+            >
+              Ummah.Build <ExternalLink className="h-3 w-3" />
+            </a>
+          </p>
         </footer>
       </div>
 
