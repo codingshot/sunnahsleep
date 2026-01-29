@@ -8,6 +8,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Legal from "./pages/Legal";
 import Install from "./pages/Install";
+import Wudu from "./pages/Wudu";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/terms" element={<Terms />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/install" element={<Install />} />
+          <Route path="/wudu" element={<Wudu />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
