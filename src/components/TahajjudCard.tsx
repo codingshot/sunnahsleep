@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Moon, Clock, Bell, BellOff, Info, MapPin } from 'lucide-react';
+import { Moon, Clock, Bell, Info, MapPin, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { tahajjudInfo } from '@/data/checklistData';
 import { TahajjudSettings, PrayerTimes } from '@/types/checklist';
@@ -13,6 +14,7 @@ interface TahajjudCardProps {
   loading: boolean;
   onToggle: (enabled: boolean) => void;
   onFetchPrayerTimes: () => void;
+  onSetCustomTime?: (time: string) => void;
 }
 
 export function TahajjudCard({ 
@@ -20,9 +22,19 @@ export function TahajjudCard({
   prayerTimes, 
   loading, 
   onToggle, 
-  onFetchPrayerTimes 
+  onFetchPrayerTimes,
+  onSetCustomTime 
 }: TahajjudCardProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [showCustomTime, setShowCustomTime] = useState(false);
+  const [customTime, setCustomTime] = useState(settings.alarmTime || settings.calculatedTime || '04:00');
+
+  const handleSetCustomTime = () => {
+    if (onSetCustomTime) {
+      onSetCustomTime(customTime);
+    }
+    setShowCustomTime(false);
+  };
 
   return (
     <div className="rounded-2xl bg-gradient-card border border-gold/20 overflow-hidden glow-gold">
@@ -42,6 +54,7 @@ export function TahajjudCard({
             checked={settings.enabled}
             onCheckedChange={onToggle}
             disabled={!settings.calculatedTime}
+            aria-label="Enable Tahajjud alarm"
           />
         </div>
 
@@ -78,19 +91,58 @@ export function TahajjudCard({
                   <Clock className="h-4 w-4 text-gold" />
                   <span className="text-cream-dim text-sm">Last Third Starts</span>
                 </div>
-                <span className="text-gold font-semibold text-lg">
-                  {settings.calculatedTime || '--:--'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gold font-semibold text-lg">
+                    {settings.alarmTime || settings.calculatedTime || '--:--'}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowCustomTime(!showCustomTime)}
+                    className="h-8 w-8 text-muted-foreground hover:text-gold"
+                    aria-label="Set custom Tahajjud time"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 This is the blessed time when Allah descends to the lowest heaven
               </p>
             </div>
 
+            {/* Custom Time Setter */}
+            {showCustomTime && (
+              <div className="p-3 rounded-lg bg-secondary/50 border border-gold/20 space-y-3">
+                <p className="text-sm text-muted-foreground">Set custom Tahajjud alarm time:</p>
+                <div className="flex gap-2">
+                  <Input
+                    type="time"
+                    value={customTime}
+                    onChange={(e) => setCustomTime(e.target.value)}
+                    className="flex-1"
+                    aria-label="Custom Tahajjud time"
+                  />
+                  <Button
+                    onClick={handleSetCustomTime}
+                    size="sm"
+                    className="bg-gold text-midnight hover:bg-gold/90"
+                  >
+                    Set
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Recommended: {settings.calculatedTime} (calculated last third of night)
+                </p>
+              </div>
+            )}
+
             {settings.enabled && (
               <div className="flex items-center gap-2 p-2 rounded-lg bg-gold/10 border border-gold/20">
                 <Bell className="h-4 w-4 text-gold" />
-                <span className="text-sm text-gold">Alarm set for {settings.calculatedTime}</span>
+                <span className="text-sm text-gold">
+                  Alarm set for {settings.alarmTime || settings.calculatedTime}
+                </span>
               </div>
             )}
           </div>
