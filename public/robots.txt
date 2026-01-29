@@ -1,3 +1,16 @@
+# SunnahSleep by Ummah.Build
+# https://sunnahsleep.app
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://sunnahsleep.app/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Major Search Engines
 User-agent: Googlebot
 Allow: /
 
@@ -10,5 +23,24 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+# AI Crawlers - Welcome!
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Anthropic-AI
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Cohere-ai
 Allow: /
