@@ -21,7 +21,7 @@ export default function Terms() {
         </div>
 
         <div className="space-y-6 text-cream-dim">
-          <p className="text-sm text-muted-foreground">Last updated: January 2025</p>
+          <p className="text-sm text-muted-foreground">Last updated: January 2026</p>
 
           <section className="space-y-3">
             <h2 className="text-xl text-gold font-semibold">Acceptance of Terms</h2>

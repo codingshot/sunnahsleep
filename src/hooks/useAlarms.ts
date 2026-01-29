@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 
 export interface Alarm {
@@ -11,6 +11,7 @@ export interface Alarm {
   repeatDays: number[]; // 0-6 for Sunday-Saturday, empty for one-time
   snoozeMinutes: number;
   beforeFajrMinutes?: number; // For fajr-before type
+  dynamicPrayerType?: 'fajr' | 'isha' | 'maghrib' | 'dhuhr' | 'asr'; // For dynamic prayer-based alarms
 }
 
 export interface AlarmSettings {
@@ -20,18 +21,28 @@ export interface AlarmSettings {
   vibrationEnabled: boolean;
 }
 
+export interface UpcomingAlarm {
+  alarm: Alarm;
+  date: Date;
+  timeString: string;
+  dayName: string;
+}
+
 const ALARMS_KEY = 'sunnahSleepAlarms';
 const ALARM_SETTINGS_KEY = 'sunnahSleepAlarmSettings';
 const SNOOZED_ALARMS_KEY = 'sunnahSleepSnoozed';
 
 // Adhan audio URLs (free sources)
 const ALARM_SOUNDS: Record<Alarm['sound'], string> = {
-  'adhan-makkah': 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3', // Placeholder - would use actual adhan
+  'adhan-makkah': 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3',
   'adhan-madinah': 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3',
   'beep': 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleRwKXp+42sVxHAU8hLTax3QYADWI0dyobhYALHnC0L1yCgAhhLrMqXcPAB6Cs8ixdRMAG4K0xbZ0EgAZgbTGt3QQABeBtce3dBEAFYG1yLhzEQAUgbbIuHMQABOBtsm4cxAAEoG3yblzDwARgbfJuXMPABCBt8m5cw4AD4G3yblzDgAOgbfJuXMOAA2Bt8m5cw0ADIG3yblzDQALgbfJuXMMAApBt8m5cwsACIG3yblzCwAHgbfJuXMKAAaBt8m5cwoABYG3yblzCQAEgbfJuXMJAAOBt8m5cwgAAoG3yblzCAABgbfJuXMH',
   'gentle': 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleRwKXp+42sVxHAU8hLTax3QYADWI0dyobhYALHnC0L1yCgAhhLrMqXcPAB6Cs8ixdRMAG4K0xbZ0EgAZgbTGt3QQABeBtce3dBEAFYG1yLhzEQAUgbbIuHMQABOBtsm4cxAAEoG3yblzDwARgbfJuXMPABCBt8m5cw4AD4G3yblzDgAOgbfJuXMOAA2Bt8m5cw0ADIG3yblzDQALgbfJuXMMAApBt8m5cwsACIG3yblzCwAHgbfJuXMKAAaBt8m5cwoABYG3yblzCQAEgbfJuXMJAAOBt8m5cwgAAoG3yblzCAABgbfJuXMH',
   'nature': 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleRwKXp+42sVxHAU8hLTax3QYADWI0dyobhYALHnC0L1yCgAhhLrMqXcPAB6Cs8ixdRMAG4K0xbZ0EgAZgbTGt3QQABeBtce3dBEAFYG1yLhzEQAUgbbIuHMQABOBtsm4cxAAEoG3yblzDwARgbfJuXMPABCBt8m5cw4AD4G3yblzDgAOgbfJuXMOAA2Bt8m5cw0ADIG3yblzDQALgbfJuXMMAApBt8m5cwsACIG3yblzCwAHgbfJuXMKAAaBt8m5cwoABYG3yblzCQAEgbfJuXMJAAOBt8m5cwgAAoG3yblzCAABgbfJuXMH',
 };
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const SHORT_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function useAlarms() {
   const [alarms, setAlarms] = useState<Alarm[]>([]);
@@ -229,6 +240,56 @@ export function useAlarms() {
     };
   }, [checkAlarms]);
 
+  // Calculate upcoming alarms for the week
+  const upcomingAlarms = useMemo((): UpcomingAlarm[] => {
+    const upcoming: UpcomingAlarm[] = [];
+    const now = new Date();
+    
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+      const checkDate = new Date(now);
+      checkDate.setDate(now.getDate() + dayOffset);
+      const dayOfWeek = checkDate.getDay();
+      const dateStr = checkDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      
+      for (const alarm of alarms) {
+        if (!alarm.enabled) continue;
+        
+        // Check if alarm repeats on this day
+        if (alarm.repeatDays.length > 0 && !alarm.repeatDays.includes(dayOfWeek)) {
+          continue;
+        }
+        
+        // For today, only show future alarms
+        if (dayOffset === 0) {
+          const [hours, mins] = alarm.time.split(':').map(Number);
+          const alarmTime = new Date(now);
+          alarmTime.setHours(hours, mins, 0, 0);
+          if (alarmTime <= now) continue;
+        }
+        
+        upcoming.push({
+          alarm,
+          date: checkDate,
+          timeString: alarm.time,
+          dayName: dayOffset === 0 ? 'Today' : dayOffset === 1 ? 'Tomorrow' : dateStr,
+        });
+      }
+    }
+    
+    // Sort by date and time
+    return upcoming.sort((a, b) => {
+      const aTime = new Date(a.date);
+      const [aH, aM] = a.timeString.split(':').map(Number);
+      aTime.setHours(aH, aM);
+      
+      const bTime = new Date(b.date);
+      const [bH, bM] = b.timeString.split(':').map(Number);
+      bTime.setHours(bH, bM);
+      
+      return aTime.getTime() - bTime.getTime();
+    }).slice(0, 10); // Limit to next 10 alarms
+  }, [alarms]);
+
   // Create prayer-based alarms
   const createPrayerAlarm = useCallback((
     type: 'fajr' | 'isha' | 'tahajjud' | 'fajr-before',
@@ -254,10 +315,17 @@ export function useAlarms() {
     });
   }, [addAlarm, settings.defaultSnooze]);
 
+  // Get next alarm
+  const nextAlarm = useMemo(() => {
+    return upcomingAlarms[0] || null;
+  }, [upcomingAlarms]);
+
   return {
     alarms,
     settings,
     activeAlarm,
+    upcomingAlarms,
+    nextAlarm,
     addAlarm,
     updateAlarm,
     deleteAlarm,
