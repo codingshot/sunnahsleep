@@ -179,46 +179,31 @@ export function usePrayerTimes() {
     }
   }, []);
 
-  // Initialize prayer times (auto-detect or use saved location)
+  // Initialize prayer times using IP-based detection (no user prompt)
   const initializePrayerTimes = useCallback(async () => {
+    // If already have location, just fetch prayer times
+    if (location.latitude && location.longitude) {
+      await fetchPrayerTimes(location.latitude, location.longitude);
+      return;
+    }
+    
     setLoading(true);
     
     try {
-      let coords: { latitude: number; longitude: number; city?: string; country?: string; timezone?: string };
+      // Use IP-based detection only - no browser geolocation prompt
+      const coords = await detectLocationByIP();
       
-      if (location.mode === 'manual' && location.latitude && location.longitude) {
-        coords = { latitude: location.latitude, longitude: location.longitude };
-      } else {
-        // Try browser geolocation first
-        if (navigator.geolocation) {
-          try {
-            const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-            });
-            coords = {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            };
-          } catch {
-            // Fall back to IP detection
-            coords = await detectLocationByIP();
-          }
-        } else {
-          coords = await detectLocationByIP();
-        }
-        
-        // Save detected location
-        const newLocation: LocationSettings = {
-          mode: 'auto',
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          city: coords.city || null,
-          country: coords.country || null,
-          timezone: coords.timezone || null,
-        };
-        setLocation(newLocation);
-        localStorage.setItem(LOCATION_KEY, JSON.stringify(newLocation));
-      }
+      // Save detected location
+      const newLocation: LocationSettings = {
+        mode: 'auto',
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        city: coords.city || null,
+        country: coords.country || null,
+        timezone: coords.timezone || null,
+      };
+      setLocation(newLocation);
+      localStorage.setItem(LOCATION_KEY, JSON.stringify(newLocation));
       
       await fetchPrayerTimes(coords.latitude, coords.longitude);
     } catch (err) {
