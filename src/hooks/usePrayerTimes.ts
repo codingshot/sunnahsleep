@@ -334,6 +334,16 @@ export function usePrayerTimes() {
     return await fetchPrayerTimesForDate(location.latitude, location.longitude, date);
   }, [location, fetchPrayerTimesForDate]);
 
+  // Preview prayer times for a location (without saving)
+  const previewPrayerTimes = useCallback(async (latitude: number, longitude: number) => {
+    try {
+      const today = new Date();
+      return await fetchPrayerTimesForDate(latitude, longitude, today);
+    } catch {
+      return null;
+    }
+  }, [fetchPrayerTimesForDate]);
+
   // Toggle Tahajjud alarm
   const toggleTahajjud = (enabled: boolean) => {
     setTahajjudSettings(prev => {
@@ -381,6 +391,7 @@ export function usePrayerTimes() {
     getRecommendedQailulahTime,
     getTimeBeforeFajr,
     getPrayerTimesForDate,
+    previewPrayerTimes,
     setManualLocation,
     resetToAutoLocation,
     searchCity,

@@ -48,12 +48,36 @@ const Index = () => {
     setManualLocation,
     resetToAutoLocation,
     searchCity,
+    previewPrayerTimes,
   } = usePrayerTimes();
 
-  const { alarms } = useAlarms();
+  const { alarms, updateAlarm } = useAlarms();
   const enabledAlarmsCount = alarms.filter(a => a.enabled).length;
 
-  const [showLocationSearch, setShowLocationSearch] = useState(false);
+  // Format alarms for location dialog
+  const alarmInfoList = alarms.map(a => ({
+    id: a.id,
+    name: a.name,
+    time: a.time,
+    type: a.type,
+  }));
+
+  // Handle updating alarms when location changes
+  const handleUpdateAlarms = (newPrayerTimes: { fajr: string; isha: string }) => {
+    alarms.forEach(alarm => {
+      if (alarm.type === 'fajr') {
+        updateAlarm(alarm.id, { time: newPrayerTimes.fajr });
+      } else if (alarm.type === 'isha') {
+        updateAlarm(alarm.id, { time: newPrayerTimes.isha });
+      } else if (alarm.type === 'fajr-before' && alarm.beforeFajrMinutes) {
+        const [h, m] = newPrayerTimes.fajr.split(':').map(Number);
+        const fajrDate = new Date();
+        fajrDate.setHours(h, m - alarm.beforeFajrMinutes, 0, 0);
+        const newTime = `${fajrDate.getHours().toString().padStart(2, '0')}:${fajrDate.getMinutes().toString().padStart(2, '0')}`;
+        updateAlarm(alarm.id, { time: newTime });
+      }
+    });
+  };
 
   // Auto-initialize prayer times on mount
   useEffect(() => {
@@ -90,7 +114,12 @@ const Index = () => {
                 <SleepScheduleInfo 
                   prayerTimes={prayerTimes} 
                   location={location}
-                  onLocationClick={() => setShowLocationSearch(true)}
+                  alarms={alarmInfoList}
+                  onSearchCity={searchCity}
+                  onSetLocation={setManualLocation}
+                  onResetLocation={resetToAutoLocation}
+                  onUpdateAlarms={handleUpdateAlarms}
+                  getNewPrayerTimes={previewPrayerTimes}
                 />
               </div>
             )}
@@ -285,7 +314,12 @@ const Index = () => {
               <SleepTimeCalculator
                 prayerTimes={prayerTimes}
                 location={location}
-                onLocationClick={() => setShowLocationSearch(true)}
+                alarms={alarmInfoList}
+                onSearchCity={searchCity}
+                onSetLocation={setManualLocation}
+                onResetLocation={resetToAutoLocation}
+                onUpdateAlarms={handleUpdateAlarms}
+                getNewPrayerTimes={previewPrayerTimes}
               />
 
               <SleepTrackerCard onIshaChecked={isIshaCompleted} />
