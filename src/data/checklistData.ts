@@ -76,6 +76,7 @@ export const checklistItems: ChecklistItem[] = [
       surahName: 'Al-Baqarah',
       surahNameArabic: 'البقرة'
     },
+    audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/262.mp3',
     completed: false,
     category: 'recitation',
   },
@@ -101,6 +102,7 @@ export const checklistItems: ChecklistItem[] = [
       surahName: 'Al-Baqarah',
       surahNameArabic: 'البقرة'
     },
+    audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/292.mp3',
     completed: false,
     category: 'recitation',
   },
@@ -126,6 +128,7 @@ export const checklistItems: ChecklistItem[] = [
       surahName: 'Al-Ikhlas',
       surahNameArabic: 'الإخلاص'
     },
+    audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6222.mp3',
     completed: false,
     category: 'recitation',
   },

@@ -7,6 +7,7 @@ export interface ChecklistItem {
   hadithSource?: string;
   hadithReference?: HadithReference;
   quranReference?: QuranReference;
+  audioUrl?: string;
   completed: boolean;
   category: 'preparation' | 'recitation' | 'position' | 'dhikr';
 }

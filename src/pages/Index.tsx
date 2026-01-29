@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -49,17 +49,6 @@ const Index = () => {
 
   const { alarms } = useAlarms();
   const enabledAlarmsCount = alarms.filter(a => a.enabled).length;
-
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent.toLowerCase();
-      setIsMobile(/iphone|ipad|ipod|android/.test(userAgent));
-    };
-    checkMobile();
-  }, []);
 
   // Auto-initialize prayer times on mount
   useEffect(() => {
@@ -306,21 +295,17 @@ const Index = () => {
           </a>
           
           {/* Footer links */}
-          <nav className="flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4" aria-label="Footer navigation">
+          <nav className="flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4 flex-wrap" aria-label="Footer navigation">
             <Link to="/privacy" className="hover:text-gold transition-colors">Privacy</Link>
             <span aria-hidden="true">•</span>
             <Link to="/terms" className="hover:text-gold transition-colors">Terms</Link>
             <span aria-hidden="true">•</span>
             <Link to="/legal" className="hover:text-gold transition-colors">Legal</Link>
-            {isMobile && (
-              <>
-                <span aria-hidden="true">•</span>
-                <Link to="/install" className="hover:text-gold transition-colors flex items-center gap-1">
-                  <Download className="h-3 w-3" />
-                  Install
-                </Link>
-              </>
-            )}
+            <span aria-hidden="true">•</span>
+            <Link to="/install" className="hover:text-gold transition-colors flex items-center gap-1">
+              <Download className="h-3 w-3" />
+              Install
+            </Link>
           </nav>
           
           <p className="text-muted-foreground text-xs mt-3">
