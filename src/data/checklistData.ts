@@ -1,6 +1,29 @@
 import { ChecklistItem, DuaItem } from '@/types/checklist';
 
 export const checklistItems: ChecklistItem[] = [
+  // === PHASE 1: EVENING (Isha Prayer) ===
+  {
+    id: 'pray-isha',
+    title: 'Pray Isha',
+    titleArabic: 'صلاة العشاء',
+    description: 'Perform the obligatory Isha prayer',
+    detailedExplanation: 'Isha prayer is the final obligatory prayer of the day. The Prophet ﷺ recommended praying it early and then preparing for sleep. Praying Isha in congregation equals half the night in prayer, and praying Fajr in congregation completes the full night.',
+    hadithSource: 'Muslim',
+    hadithReference: {
+      collection: 'muslim',
+      bookNumber: 5,
+      hadithNumber: 656,
+      narrator: 'Uthman bin Affan',
+      arabicText: 'مَنْ صَلَّى الْعِشَاءَ فِي جَمَاعَةٍ فَكَأَنَّمَا قَامَ نِصْفَ اللَّيْلِ',
+      englishText: 'Whoever prays Isha in congregation, it is as if he prayed half the night.'
+    },
+    completed: false,
+    category: 'isha',
+    phase: 'evening',
+    linkedAlarmType: 'isha',
+  },
+
+  // === PHASE 2: BEDTIME (After Isha) ===
   {
     id: 'wudu',
     title: 'Perform Wudu',
@@ -18,6 +41,7 @@ export const checklistItems: ChecklistItem[] = [
     },
     completed: false,
     category: 'preparation',
+    phase: 'bedtime',
   },
   {
     id: 'dust-bed',
@@ -36,6 +60,7 @@ export const checklistItems: ChecklistItem[] = [
     },
     completed: false,
     category: 'preparation',
+    phase: 'bedtime',
   },
   {
     id: 'right-side',
@@ -54,6 +79,7 @@ export const checklistItems: ChecklistItem[] = [
     },
     completed: false,
     category: 'position',
+    phase: 'bedtime',
   },
   {
     id: 'ayat-kursi',
@@ -79,6 +105,7 @@ export const checklistItems: ChecklistItem[] = [
     audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/262.mp3',
     completed: false,
     category: 'recitation',
+    phase: 'bedtime',
   },
   {
     id: 'last-two-baqarah',
@@ -105,6 +132,7 @@ export const checklistItems: ChecklistItem[] = [
     audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/292.mp3',
     completed: false,
     category: 'recitation',
+    phase: 'bedtime',
   },
   {
     id: 'three-quls',
@@ -131,6 +159,7 @@ export const checklistItems: ChecklistItem[] = [
     audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6222.mp3',
     completed: false,
     category: 'recitation',
+    phase: 'bedtime',
   },
   {
     id: 'bedtime-dua',
@@ -149,6 +178,183 @@ export const checklistItems: ChecklistItem[] = [
     },
     completed: false,
     category: 'dhikr',
+    phase: 'bedtime',
+  },
+  {
+    id: 'tasbih-33',
+    title: 'Tasbih of Fatimah',
+    titleArabic: 'تسبيح فاطمة',
+    description: 'Say SubhanAllah 33x, Alhamdulillah 33x, Allahu Akbar 34x',
+    detailedExplanation: 'The Prophet ﷺ taught his daughter Fatimah (RA) this dhikr when she asked for a servant to help with housework. He said this is better than a servant and will strengthen you. This tasbih before sleep brings immense blessings and energy for the next day.',
+    hadithSource: 'Bukhari and Muslim',
+    hadithReference: {
+      collection: 'bukhari',
+      bookNumber: 80,
+      hadithNumber: 6318,
+      narrator: 'Ali ibn Abi Talib',
+      arabicText: 'أَلاَ أَدُلُّكُمَا عَلَى مَا هُوَ خَيْرٌ لَكُمَا مِنْ خَادِمٍ',
+      englishText: 'Shall I not guide you to something better than a servant?'
+    },
+    completed: false,
+    category: 'dhikr',
+    phase: 'bedtime',
+  },
+
+  // === PHASE 3: WAKE UP (Before Fajr) ===
+  {
+    id: 'wake-tahajjud',
+    title: 'Wake for Tahajjud',
+    titleArabic: 'الاستيقاظ للتهجد',
+    description: 'Wake up in the last third of the night for night prayer',
+    detailedExplanation: 'The last third of the night is the most blessed time when Allah descends to the lowest heaven. This is when duas are readily accepted. The Prophet ﷺ never missed Tahajjud and encouraged believers to pray even if just two rakaat.',
+    hadithSource: 'Bukhari and Muslim',
+    hadithReference: {
+      collection: 'bukhari',
+      bookNumber: 19,
+      hadithNumber: 1145,
+      narrator: 'Abu Hurairah',
+      arabicText: 'يَنْزِلُ رَبُّنَا تَبَارَكَ وَتَعَالَى كُلَّ لَيْلَةٍ إِلَى السَّمَاءِ الدُّنْيَا',
+      englishText: 'Our Lord descends every night to the lowest heaven when the last third of the night remains, saying: "Who is calling upon Me that I may answer him?"'
+    },
+    completed: false,
+    category: 'wake-up',
+    phase: 'morning',
+    linkedAlarmType: 'tahajjud',
+  },
+  {
+    id: 'wake-dua',
+    title: 'Dua Upon Waking',
+    titleArabic: 'دعاء الاستيقاظ',
+    description: 'Say "Alhamdulillah alladhi ahyana" upon waking',
+    detailedExplanation: 'When waking, thank Allah for returning your soul. The Prophet ﷺ would say: "All praise is for Allah who gave us life after having taken it from us, and unto Him is the resurrection." This reminds us that each morning is a new gift from Allah.',
+    hadithSource: 'Bukhari',
+    hadithReference: {
+      collection: 'bukhari',
+      bookNumber: 80,
+      hadithNumber: 6325,
+      narrator: 'Hudhaifa',
+      arabicText: 'الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ',
+      englishText: 'All praise is for Allah who gave us life after having taken it from us, and unto Him is the resurrection.'
+    },
+    completed: false,
+    category: 'wake-up',
+    phase: 'morning',
+  },
+  {
+    id: 'rub-face',
+    title: 'Rub Face & Look at Sky',
+    titleArabic: 'مسح الوجه والنظر للسماء',
+    description: 'Wipe sleep from your face and look at the sky',
+    detailedExplanation: 'The Prophet ﷺ would wipe sleep from his face with his hands and look at the sky, reciting the last verses of Surah Aal-Imran (3:190-200). This practice helps awaken the body gently while immediately turning to the remembrance of Allah.',
+    hadithSource: 'Bukhari and Muslim',
+    hadithReference: {
+      collection: 'bukhari',
+      bookNumber: 19,
+      hadithNumber: 1154,
+      narrator: 'Ibn Abbas',
+      arabicText: 'فَجَعَلَ يَمْسَحُ النَّوْمَ عَنْ وَجْهِهِ بِيَدَيْهِ ثُمَّ نَظَرَ إِلَى السَّمَاءِ',
+      englishText: 'He began wiping sleep from his face with his hands, then he looked at the sky.'
+    },
+    completed: false,
+    category: 'wake-up',
+    phase: 'morning',
+  },
+  {
+    id: 'miswak-wudu',
+    title: 'Miswak & Fresh Wudu',
+    titleArabic: 'السواك والوضوء',
+    description: 'Use miswak and perform fresh wudu upon waking',
+    detailedExplanation: 'The Prophet ﷺ said: "Were it not for the hardship on my Ummah, I would have commanded them to use the miswak before every prayer." Using miswak upon waking cleanses the mouth and pleases Allah. Fresh wudu removes the effects of sleep.',
+    hadithSource: 'Bukhari and Muslim',
+    hadithReference: {
+      collection: 'bukhari',
+      bookNumber: 4,
+      hadithNumber: 245,
+      narrator: 'Hudhaifa',
+      arabicText: 'كَانَ النَّبِيُّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ إِذَا قَامَ مِنَ اللَّيْلِ يَشُوصُ فَاهُ بِالسِّوَاكِ',
+      englishText: 'When the Prophet ﷺ got up at night, he would clean his mouth with the miswak.'
+    },
+    completed: false,
+    category: 'wake-up',
+    phase: 'morning',
+  },
+  {
+    id: 'tahajjud-prayer',
+    title: 'Pray Tahajjud',
+    titleArabic: 'صلاة التهجد',
+    description: 'Pray voluntary night prayer (minimum 2 rakaat)',
+    detailedExplanation: 'Tahajjud is prayed in sets of two rakaat. Start with two light rakaat to warm up, then pray as many as you wish. The Prophet ﷺ would pray 11 rakaat including Witr. Even 2 rakaat is immensely rewarding at this blessed time.',
+    hadithSource: 'Muslim',
+    hadithReference: {
+      collection: 'muslim',
+      bookNumber: 6,
+      hadithNumber: 1691,
+      narrator: 'Abdullah ibn Umar',
+      arabicText: 'صَلاَةُ اللَّيْلِ مَثْنَى مَثْنَى',
+      englishText: 'The night prayer is two by two (rakaat).'
+    },
+    completed: false,
+    category: 'wake-up',
+    phase: 'morning',
+    linkedAlarmType: 'tahajjud',
+  },
+  {
+    id: 'witr',
+    title: 'Pray Witr',
+    titleArabic: 'صلاة الوتر',
+    description: 'End the night with Witr prayer (odd number)',
+    detailedExplanation: 'Witr is a highly emphasized Sunnah that should be prayed after Tahajjud. It can be 1, 3, 5, 7, 9, or 11 rakaat. If you fear missing it, pray it before sleeping. The Prophet ﷺ said: "Make Witr the last of your night prayer."',
+    hadithSource: 'Bukhari and Muslim',
+    hadithReference: {
+      collection: 'bukhari',
+      bookNumber: 14,
+      hadithNumber: 998,
+      narrator: 'Abdullah ibn Umar',
+      arabicText: 'اجْعَلُوا آخِرَ صَلاَتِكُمْ بِاللَّيْلِ وِتْرًا',
+      englishText: 'Make Witr the last of your night prayer.'
+    },
+    completed: false,
+    category: 'wake-up',
+    phase: 'morning',
+  },
+  {
+    id: 'suhoor-snack',
+    title: 'Light Pre-Fajr Meal',
+    titleArabic: 'السحور',
+    description: 'Have a light snack or drink before Fajr (especially if fasting)',
+    detailedExplanation: 'The Prophet ﷺ encouraged eating suhoor, even if just a sip of water or a date. He said: "Take suhoor, for indeed there is blessing in it." This provides energy for the day and is a blessed Sunnah.',
+    hadithSource: 'Bukhari and Muslim',
+    hadithReference: {
+      collection: 'bukhari',
+      bookNumber: 30,
+      hadithNumber: 1923,
+      narrator: 'Anas bin Malik',
+      arabicText: 'تَسَحَّرُوا فَإِنَّ فِي السُّحُورِ بَرَكَةً',
+      englishText: 'Take suhoor, for indeed there is blessing in it.'
+    },
+    completed: false,
+    category: 'wake-up',
+    phase: 'morning',
+  },
+  {
+    id: 'pray-fajr',
+    title: 'Pray Fajr on Time',
+    titleArabic: 'صلاة الفجر',
+    description: 'Pray Fajr as soon as the time enters',
+    detailedExplanation: 'Fajr prayer is the most difficult prayer but has immense rewards. The Prophet ﷺ said: "The two rakaat of Fajr are better than the world and everything in it." Praying Fajr in congregation completes the reward of praying the whole night.',
+    hadithSource: 'Muslim',
+    hadithReference: {
+      collection: 'muslim',
+      bookNumber: 5,
+      hadithNumber: 725,
+      narrator: 'Aisha',
+      arabicText: 'رَكْعَتَا الْفَجْرِ خَيْرٌ مِنَ الدُّنْيَا وَمَا فِيهَا',
+      englishText: 'The two rakaat of Fajr are better than the world and everything in it.'
+    },
+    completed: false,
+    category: 'wake-up',
+    phase: 'morning',
+    linkedAlarmType: 'fajr',
   },
 ];
 
@@ -193,6 +399,20 @@ export const duas: DuaItem[] = [
       bookNumber: 80,
       hadithNumber: 6311,
       narrator: "Al-Bara' bin 'Azib",
+    },
+  },
+  {
+    id: 'wake-dua',
+    title: 'Upon Waking',
+    arabic: 'الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ',
+    transliteration: 'Alhamdulillah alladhi ahyana ba\'da ma amatana wa ilayhi an-nushur',
+    translation: 'All praise is for Allah who gave us life after having taken it from us, and unto Him is the resurrection.',
+    source: 'Bukhari',
+    hadithReference: {
+      collection: 'bukhari',
+      bookNumber: 80,
+      hadithNumber: 6325,
+      narrator: 'Hudhaifa',
     },
   },
 ];
@@ -293,13 +513,12 @@ export const sleepAfterIshaInfo = {
   title: 'Sleep Early After Isha',
   titleArabic: 'النوم بعد صلاة العشاء',
   description: 'The Prophet ﷺ disliked talking after Isha prayer and recommended sleeping early',
-  detailedExplanation: 'The Prophet ﷺ used to dislike sleeping before Isha prayer and conversing (idle talk) after it. This Sunnah encourages going to sleep early after Isha to wake up refreshed for Fajr and Tahajjud prayer. It helps maintain a healthy sleep schedule aligned with natural rhythms.',
   hadithReference: {
     collection: 'bukhari',
-    bookNumber: 10,
+    bookNumber: 9,
     hadithNumber: 568,
     narrator: 'Abu Barza',
     arabicText: 'كَانَ يَكْرَهُ النَّوْمَ قَبْلَهَا وَالْحَدِيثَ بَعْدَهَا',
-    englishText: 'The Prophet ﷺ disliked sleeping before the Isha prayer and talking after it.'
+    englishText: 'The Prophet ﷺ disliked sleeping before Isha and talking after it.'
   }
 };

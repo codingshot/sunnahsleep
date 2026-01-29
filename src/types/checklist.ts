@@ -9,7 +9,9 @@ export interface ChecklistItem {
   quranReference?: QuranReference;
   audioUrl?: string;
   completed: boolean;
-  category: 'preparation' | 'recitation' | 'position' | 'dhikr';
+  category: 'isha' | 'preparation' | 'recitation' | 'position' | 'dhikr' | 'wake-up';
+  phase: 'evening' | 'bedtime' | 'morning';
+  linkedAlarmType?: 'isha' | 'fajr' | 'fajr-before' | 'tahajjud';
 }
 
 export interface HadithReference {
