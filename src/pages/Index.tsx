@@ -19,7 +19,8 @@ import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { useAlarms } from '@/hooks/useAlarms';
 import { duas, lastTwoAyahBaqarah, threeQuls } from '@/data/checklistData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets } from 'lucide-react';
+import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets, Plus, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
@@ -59,7 +60,8 @@ const Index = () => {
     upcomingAlarms,
     nextAlarm,
     settings,
-    requestNotificationPermission 
+    requestNotificationPermission,
+    createPrayerAlarm,
   } = useAlarms();
   const enabledAlarmsCount = alarms.filter(a => a.enabled).length;
 
@@ -303,9 +305,41 @@ const Index = () => {
                   )}
                 </div>
                 <div className="p-3 rounded-xl bg-gold/5 border border-gold/20 mb-3">
-                  <p className="text-xs text-cream-dim">
+                  <p className="text-xs text-cream-dim mb-3">
                     💡 <span className="text-gold font-medium">Sunnah:</span> Wake in the last third of the night for Tahajjud when Allah descends to the lowest heaven and answers prayers.
                   </p>
+                  {/* Quick-add Tahajjud alarm button */}
+                  {prayerTimes && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const tahajjudTime = getTimeBeforeFajr(30);
+                        if (tahajjudTime) {
+                          // Check if alarm already exists
+                          const existingAlarm = alarms.find(a => a.type === 'tahajjud');
+                          if (existingAlarm) {
+                            toast.info('Tahajjud alarm already set', {
+                              description: `Alarm set for ${tahajjudTime}`,
+                            });
+                          } else {
+                            createPrayerAlarm('tahajjud', tahajjudTime);
+                            toast.success('Tahajjud alarm added!', {
+                              description: `Alarm set for ${tahajjudTime} (30 min before Fajr)`,
+                            });
+                          }
+                        }
+                      }}
+                      className="w-full border-gold/30 text-gold hover:bg-gold/10 gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <Clock className="h-3.5 w-3.5" />
+                      Quick Add Tahajjud Alarm
+                      {prayerTimes && getTimeBeforeFajr(30) && (
+                        <span className="text-xs opacity-70">({getTimeBeforeFajr(30)})</span>
+                      )}
+                    </Button>
+                  )}
                 </div>
                 <div className="space-y-3">
                   {morningItems.map((item) => (
