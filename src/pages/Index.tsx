@@ -196,16 +196,16 @@ const Index = () => {
             </TabsList>
 
             <TabsContent value="checklist" className="space-y-6">
-              {/* Phase 1: Evening (Isha) */}
-              <section aria-labelledby="evening-heading">
+              {/* Step 1: Pray Isha */}
+              <section aria-labelledby="isha-heading">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 id="evening-heading" className="text-sm font-semibold text-gold uppercase tracking-wider flex items-center gap-2">
+                  <h2 id="isha-heading" className="text-sm font-semibold text-gold uppercase tracking-wider flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-gold/20 text-gold text-xs flex items-center justify-center">1</span>
-                    Evening — Pray Isha
+                    Pray Isha
                   </h2>
                   {prayerTimes && (
                     <span className="text-xs text-cream-dim">
-                      Isha: {prayerTimes.isha}
+                      {prayerTimes.isha}
                     </span>
                   )}
                 </div>
@@ -222,7 +222,7 @@ const Index = () => {
                           className="mt-2 text-xs text-gold/70 hover:text-gold flex items-center gap-1 transition-colors"
                         >
                           <Bell className="h-3 w-3" />
-                          Set {item.linkedAlarmType === 'isha' ? 'Isha' : 'Fajr'} alarm reminder
+                          Set Isha alarm reminder
                         </button>
                       )}
                     </div>
@@ -230,19 +230,18 @@ const Index = () => {
                 </div>
               </section>
 
-              {/* Phase 2: Bedtime (After Isha) */}
-              <section aria-labelledby="bedtime-heading">
+              {/* Step 2: Preparation */}
+              <section aria-labelledby="preparation-heading">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 id="bedtime-heading" className="text-sm font-semibold text-gold uppercase tracking-wider flex items-center gap-2">
+                  <h2 id="preparation-heading" className="text-sm font-semibold text-gold uppercase tracking-wider flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-gold/20 text-gold text-xs flex items-center justify-center">2</span>
-                    Bedtime — After Isha
+                    Preparation
                   </h2>
                 </div>
                 <div className="space-y-3">
-                  {bedtimeItems.map((item) => (
+                  {bedtimeItems.filter(i => i.category === 'preparation' || i.category === 'position').map((item) => (
                     <div key={item.id}>
                       <ChecklistCard item={item} onToggle={toggleItem} />
-                      {/* Add Wudu guide link for the wudu item */}
                       {item.id === 'wudu' && (
                         <Link to="/wudu">
                           <Button 
@@ -260,11 +259,41 @@ const Index = () => {
                 </div>
               </section>
 
-              {/* Phase 3: Morning (Wake Before Fajr) */}
+              {/* Step 3: Recitations */}
+              <section aria-labelledby="recitation-heading">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 id="recitation-heading" className="text-sm font-semibold text-gold uppercase tracking-wider flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-gold/20 text-gold text-xs flex items-center justify-center">3</span>
+                    Recitations
+                  </h2>
+                </div>
+                <div className="space-y-3">
+                  {bedtimeItems.filter(i => i.category === 'recitation').map((item) => (
+                    <ChecklistCard key={item.id} item={item} onToggle={toggleItem} />
+                  ))}
+                </div>
+              </section>
+
+              {/* Step 4: Remembrance */}
+              <section aria-labelledby="dhikr-heading">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 id="dhikr-heading" className="text-sm font-semibold text-gold uppercase tracking-wider flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-gold/20 text-gold text-xs flex items-center justify-center">4</span>
+                    Remembrance
+                  </h2>
+                </div>
+                <div className="space-y-3">
+                  {bedtimeItems.filter(i => i.category === 'dhikr').map((item) => (
+                    <ChecklistCard key={item.id} item={item} onToggle={toggleItem} />
+                  ))}
+                </div>
+              </section>
+
+              {/* Step 5: Wake Up Before Fajr */}
               <section aria-labelledby="morning-heading">
                 <div className="flex items-center justify-between mb-3">
                   <h2 id="morning-heading" className="text-sm font-semibold text-gold uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gold/20 text-gold text-xs flex items-center justify-center">3</span>
+                    <span className="w-6 h-6 rounded-full bg-gold/20 text-gold text-xs flex items-center justify-center">5</span>
                     Wake Up — Before Fajr
                   </h2>
                   {prayerTimes && (
