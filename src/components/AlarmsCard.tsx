@@ -278,7 +278,7 @@ export function AlarmsCard({
           
           {showIshaReminder && (
             <div className="mt-3 p-4 rounded-xl bg-gold/5 border border-gold/20 space-y-2">
-              <p className="text-sm text-cream-dim">{sleepAfterIshaInfo.detailedExplanation}</p>
+              <p className="text-sm text-cream-dim">{sleepAfterIshaInfo.description}</p>
               <div className="p-3 rounded-lg bg-secondary/30 border border-gold/10">
                 <p className="font-arabic text-gold text-right text-sm" dir="rtl">
                   {sleepAfterIshaInfo.hadithReference.arabicText}
