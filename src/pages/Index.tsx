@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { ProgressRing } from '@/components/ProgressRing';
 import { ChecklistCard } from '@/components/ChecklistCard';
@@ -24,7 +24,27 @@ import { CountdownTimer } from '@/components/CountdownTimer';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
+const VALID_TABS = ['checklist', 'recitations', 'tasbih', 'sleep', 'alarms'] as const;
+type TabValue = typeof VALID_TABS[number];
+
 const Index = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') as TabValue | null;
+  const initialTab = tabFromUrl && VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'checklist';
+  const [activeTab, setActiveTab] = useState<TabValue>(initialTab);
+
+  // Sync tab changes to URL
+  const handleTabChange = (value: string) => {
+    const newTab = value as TabValue;
+    setActiveTab(newTab);
+    if (newTab === 'checklist') {
+      searchParams.delete('tab');
+    } else {
+      searchParams.set('tab', newTab);
+    }
+    setSearchParams(searchParams, { replace: true });
+  };
+
   const {
     items,
     tasbih,
@@ -154,7 +174,7 @@ const Index = () => {
 
         {/* Main Content */}
         <main className="px-6">
-          <Tabs defaultValue="checklist" className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1 grid grid-cols-5" aria-label="App sections">
               <TabsTrigger
                 value="checklist"
