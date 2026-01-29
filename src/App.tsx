@@ -9,6 +9,8 @@ import Terms from "./pages/Terms";
 import Legal from "./pages/Legal";
 import Install from "./pages/Install";
 import Wudu from "./pages/Wudu";
+import Blog from "./pages/Blog";
+import BlogArticle from "./pages/BlogArticle";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/legal" element={<Legal />} />
           <Route path="/install" element={<Install />} />
           <Route path="/wudu" element={<Wudu />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogArticle />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
