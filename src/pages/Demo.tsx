@@ -9,6 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
+// Import phone mockup images
+import demoChecklist from '@/assets/demo-checklist.png';
+import demoTasbih from '@/assets/demo-tasbih.png';
+import demoPrayers from '@/assets/demo-prayers.png';
+import demoQuran from '@/assets/demo-quran.png';
+import demoSleep from '@/assets/demo-sleep.png';
+
 interface FeatureSlide {
   id: string;
   title: string;
@@ -17,6 +24,7 @@ interface FeatureSlide {
   icon: React.ReactNode;
   color: string;
   features: string[];
+  image: string;
 }
 
 const featureSlides: FeatureSlide[] = [
@@ -33,7 +41,8 @@ const featureSlides: FeatureSlide[] = [
       'Quranic recitations (Ayat al-Kursi, Three Quls)',
       'Dhikr and bedtime duas',
       'Wake up routine before Fajr'
-    ]
+    ],
+    image: demoChecklist
   },
   {
     id: 'prayer-times',
@@ -48,7 +57,8 @@ const featureSlides: FeatureSlide[] = [
       'Live countdown to Isha & Fajr',
       'Calculates optimal bedtime',
       'Last third of night for Tahajjud'
-    ]
+    ],
+    image: demoPrayers
   },
   {
     id: 'alarms',
@@ -63,7 +73,8 @@ const featureSlides: FeatureSlide[] = [
       'Custom snooze settings',
       'Auto-updates with location',
       'Beautiful Adhan sounds'
-    ]
+    ],
+    image: demoPrayers
   },
   {
     id: 'tasbih',
@@ -78,7 +89,8 @@ const featureSlides: FeatureSlide[] = [
       'Allahu Akbar × 34',
       'Visual progress tracking',
       'Completion celebration'
-    ]
+    ],
+    image: demoTasbih
   },
   {
     id: 'recitations',
@@ -93,7 +105,8 @@ const featureSlides: FeatureSlide[] = [
       'Surah Al-Mulk',
       'Three Quls (Ikhlas, Falaq, Nas)',
       'Audio playback with text'
-    ]
+    ],
+    image: demoQuran
   },
   {
     id: 'sleep-tracker',
@@ -108,7 +121,8 @@ const featureSlides: FeatureSlide[] = [
       'Dream journal entries',
       'Good vs bad dream guidance',
       'Weekly statistics'
-    ]
+    ],
+    image: demoSleep
   }
 ];
 
@@ -221,32 +235,45 @@ export default function Demo() {
             'overflow-hidden border-gold/20 transition-all duration-500',
             `bg-gradient-to-br ${currentFeature.color}`
           )}>
-            <CardContent className="p-8">
-              <div className="flex flex-col md:flex-row items-start gap-8">
-                {/* Icon & Title */}
-                <div className="flex-shrink-0">
-                  <div className="p-4 rounded-2xl bg-gold/10 text-gold mb-4">
-                    {currentFeature.icon}
+            <CardContent className="p-6 md:p-8">
+              <div className="flex flex-col lg:flex-row items-center gap-8">
+                {/* Phone Mockup Image */}
+                <div className="flex-shrink-0 relative">
+                  <div className="w-48 md:w-56 lg:w-64 mx-auto">
+                    <img 
+                      src={currentFeature.image} 
+                      alt={`${currentFeature.title} screenshot`}
+                      className="w-full h-auto rounded-3xl shadow-2xl border border-gold/10"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-1">
-                    {currentFeature.title}
-                  </h3>
-                  <p className="font-arabic text-xl text-gold">
-                    {currentFeature.titleArabic}
-                  </p>
                 </div>
 
-                {/* Description & Features */}
-                <div className="flex-1">
+                {/* Content */}
+                <div className="flex-1 text-center lg:text-left">
+                  {/* Icon & Title */}
+                  <div className="flex items-center gap-4 mb-4 justify-center lg:justify-start">
+                    <div className="p-3 rounded-2xl bg-gold/10 text-gold">
+                      {currentFeature.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground">
+                        {currentFeature.title}
+                      </h3>
+                      <p className="font-arabic text-lg text-gold">
+                        {currentFeature.titleArabic}
+                      </p>
+                    </div>
+                  </div>
+
                   <p className="text-cream-dim mb-6 text-lg">
                     {currentFeature.description}
                   </p>
                   
-                  <ul className="space-y-3">
+                  <ul className="space-y-2 text-left">
                     {currentFeature.features.map((feature, idx) => (
                       <li key={idx} className="flex items-center gap-3">
                         <Sparkles className="h-4 w-4 text-gold flex-shrink-0" />
-                        <span className="text-foreground">{feature}</span>
+                        <span className="text-foreground text-sm md:text-base">{feature}</span>
                       </li>
                     ))}
                   </ul>
