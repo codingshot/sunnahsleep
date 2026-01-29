@@ -377,14 +377,27 @@ export default function Wudu() {
         {showKeyboardHelp && (
           <div className="px-6 mb-4">
             <div className="p-4 rounded-xl bg-secondary/50 border border-border">
-              <h3 className="text-sm font-semibold text-gold mb-2">⌨️ Keyboard Shortcuts</h3>
-              <div className="grid grid-cols-2 gap-2 text-xs text-cream-dim">
-                <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">1-9</kbd> Go to step 1-9</div>
-                <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">0</kbd> Step 10 (Feet)</div>
-                <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">-</kbd> Step 11 (Dua)</div>
-                <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">↑/↓</kbd> Navigate steps</div>
-                <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">Space</kbd> Mark complete</div>
-                <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">?</kbd> Toggle help</div>
+              <h3 className="text-sm font-semibold text-gold mb-3">⌨️ Keyboard Shortcuts</h3>
+              <div className="space-y-3">
+                {/* Navigation - Most Important */}
+                <div className="p-2 rounded-lg bg-gold/10 border border-gold/20">
+                  <p className="text-xs font-medium text-gold mb-2">Navigation (hands-free)</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-cream-dim">
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-secondary text-gold font-bold">↑</kbd> Previous step</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-secondary text-gold font-bold">↓</kbd> Next step</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-secondary text-gold">k</kbd> Previous (vim)</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-secondary text-gold">j</kbd> Next (vim)</div>
+                  </div>
+                </div>
+                {/* Other shortcuts */}
+                <div className="grid grid-cols-2 gap-2 text-xs text-cream-dim">
+                  <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">1-9</kbd> Jump to step 1-9</div>
+                  <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">0</kbd> Step 10 (Feet)</div>
+                  <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">-</kbd> Step 11 (Dua)</div>
+                  <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">Space</kbd> Mark complete</div>
+                  <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">Enter</kbd> Mark complete</div>
+                  <div><kbd className="px-1 py-0.5 rounded bg-secondary text-gold">?</kbd> Toggle help</div>
+                </div>
               </div>
             </div>
           </div>
