@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -13,10 +14,10 @@ import { AlarmsCard } from '@/components/AlarmsCard';
 import { CompletionCelebration } from '@/components/CompletionCelebration';
 import { useChecklist } from '@/hooks/useChecklist';
 import { usePrayerTimes } from '@/hooks/usePrayerTimes';
+import { useAlarms } from '@/hooks/useAlarms';
 import { duas, lastTwoAyahBaqarah, threeQuls } from '@/data/checklistData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, BookOpen, Circle, Clock, Moon, BookOpenCheck, Bed, Bell, ExternalLink } from 'lucide-react';
-import { useEffect } from 'react';
+import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download } from 'lucide-react';
 
 const Index = () => {
   const {
@@ -46,6 +47,20 @@ const Index = () => {
     searchCity,
   } = usePrayerTimes();
 
+  const { alarms } = useAlarms();
+  const enabledAlarmsCount = alarms.filter(a => a.enabled).length;
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      setIsMobile(/iphone|ipad|ipod|android/.test(userAgent));
+    };
+    checkMobile();
+  }, []);
+
   // Auto-initialize prayer times on mount
   useEffect(() => {
     if (!prayerTimes) {
@@ -59,7 +74,7 @@ const Index = () => {
   const dhikrItems = items.filter((i) => i.category === 'dhikr');
 
   // Check if Isha is completed
-  const ishaItem = items.find(i => i.id === 'ayat-kursi'); // Using as proxy for bedtime prayers
+  const ishaItem = items.find(i => i.id === 'ayat-kursi');
   const isIshaCompleted = ishaItem?.completed || false;
 
   return (
@@ -75,45 +90,55 @@ const Index = () => {
         </div>
 
         {/* Main Content */}
-        <div className="px-6">
+        <main className="px-6">
           <Tabs defaultValue="checklist" className="w-full">
-            <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1 grid grid-cols-5">
+            <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1 grid grid-cols-5" aria-label="App sections">
               <TabsTrigger
                 value="checklist"
                 className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
+                aria-label="Checklist"
               >
                 <ListChecks className="h-4 w-4" />
               </TabsTrigger>
               <TabsTrigger
                 value="recitations"
                 className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
+                aria-label="Recitations"
               >
-                <BookOpenCheck className="h-4 w-4" />
+                <BookOpen className="h-4 w-4" />
               </TabsTrigger>
               <TabsTrigger
                 value="tasbih"
                 className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
+                aria-label="Tasbih counter"
               >
                 <Circle className="h-4 w-4" />
               </TabsTrigger>
               <TabsTrigger
                 value="sleep"
                 className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
+                aria-label="Sleep tracker"
               >
                 <Bed className="h-4 w-4" />
               </TabsTrigger>
               <TabsTrigger
                 value="alarms"
-                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs relative"
+                aria-label={`Alarms${enabledAlarmsCount > 0 ? ` (${enabledAlarmsCount} active)` : ''}`}
               >
                 <Bell className="h-4 w-4" />
+                {enabledAlarmsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-gold text-midnight text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {enabledAlarmsCount}
+                  </span>
+                )}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="checklist" className="space-y-6">
               {/* Preparation */}
-              <section>
-                <h2 className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
+              <section aria-labelledby="preparation-heading">
+                <h2 id="preparation-heading" className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
                   Preparation
                 </h2>
                 <div className="space-y-3">
@@ -124,8 +149,8 @@ const Index = () => {
               </section>
 
               {/* Position */}
-              <section>
-                <h2 className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
+              <section aria-labelledby="position-heading">
+                <h2 id="position-heading" className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
                   Sleeping Position
                 </h2>
                 <div className="space-y-3">
@@ -138,8 +163,8 @@ const Index = () => {
               </section>
 
               {/* Recitation */}
-              <section>
-                <h2 className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
+              <section aria-labelledby="recitation-heading">
+                <h2 id="recitation-heading" className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
                   Recitation
                 </h2>
                 <div className="space-y-3">
@@ -150,8 +175,8 @@ const Index = () => {
               </section>
 
               {/* Dhikr */}
-              <section>
-                <h2 className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
+              <section aria-labelledby="dhikr-heading">
+                <h2 id="dhikr-heading" className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
                   Remembrance
                 </h2>
                 <div className="space-y-3">
@@ -175,8 +200,8 @@ const Index = () => {
               />
 
               {/* Three Quls */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gold uppercase tracking-wider">
+              <section aria-labelledby="three-quls-heading">
+                <h3 id="three-quls-heading" className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
                   The Three Quls (Al-Mu'awwidhaat)
                 </h3>
                 {threeQuls.map((qul) => (
@@ -194,17 +219,17 @@ const Index = () => {
                     surah={qul.surah}
                   />
                 ))}
-              </div>
+              </section>
 
               {/* Duas */}
-              <div className="space-y-3 mt-6">
-                <h3 className="text-sm font-semibold text-gold uppercase tracking-wider">
+              <section aria-labelledby="duas-heading" className="mt-6">
+                <h3 id="duas-heading" className="text-sm font-semibold text-gold uppercase tracking-wider mb-3">
                   Bedtime Duas
                 </h3>
                 {duas.map((dua) => (
                   <DuaCard key={dua.id} dua={dua} />
                 ))}
-              </div>
+              </section>
             </TabsContent>
 
             <TabsContent value="tasbih">
@@ -221,9 +246,14 @@ const Index = () => {
                   SubhanAllah 33 times, Alhamdulillah 33 times, and Allahu Akbar 34 times before
                   sleeping, that will be better for him than having a servant."
                 </p>
-                <p className="text-muted-foreground text-xs mt-2 italic">
-                  Bukhari and Muslim
-                </p>
+                <a 
+                  href="https://sunnah.com/bukhari:6318"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gold text-xs mt-2 hover:underline inline-block"
+                >
+                  Bukhari and Muslim - View on Sunnah.com →
+                </a>
               </div>
             </TabsContent>
 
@@ -256,7 +286,7 @@ const Index = () => {
               />
             </TabsContent>
           </Tabs>
-        </div>
+        </main>
 
         {/* Quranic verse footer */}
         <footer className="px-6 mt-8 text-center">
@@ -266,16 +296,32 @@ const Index = () => {
           <p className="text-cream-dim text-sm italic">
             "And it is He who has made the night for you as clothing and sleep [a means for] rest"
           </p>
-          <p className="text-muted-foreground text-xs mt-1 mb-4">Surah Al-Furqan 25:47</p>
+          <a 
+            href="https://quran.com/25/47"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground text-xs mt-1 mb-4 hover:text-gold transition-colors inline-block"
+          >
+            Surah Al-Furqan 25:47 →
+          </a>
           
           {/* Footer links */}
-          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <nav className="flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4" aria-label="Footer navigation">
             <Link to="/privacy" className="hover:text-gold transition-colors">Privacy</Link>
-            <span>•</span>
+            <span aria-hidden="true">•</span>
             <Link to="/terms" className="hover:text-gold transition-colors">Terms</Link>
-            <span>•</span>
+            <span aria-hidden="true">•</span>
             <Link to="/legal" className="hover:text-gold transition-colors">Legal</Link>
-          </div>
+            {isMobile && (
+              <>
+                <span aria-hidden="true">•</span>
+                <Link to="/install" className="hover:text-gold transition-colors flex items-center gap-1">
+                  <Download className="h-3 w-3" />
+                  Install
+                </Link>
+              </>
+            )}
+          </nav>
           
           <p className="text-muted-foreground text-xs mt-3">
             Made with ❤️ by{' '}

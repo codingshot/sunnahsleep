@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
-  Bell, BellOff, Plus, Trash2, Clock, Volume2, 
-  Sun, Moon, MapPin, Search, X, Settings
+  Bell, Plus, Trash2, 
+  Sun, Moon, MapPin, Search, X, Settings, Edit2, Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useAlarms, Alarm } from '@/hooks/useAlarms';
 import { PrayerTimes } from '@/types/checklist';
+import { sleepAfterIshaInfo } from '@/data/checklistData';
 
 interface LocationSettings {
   mode: 'auto' | 'manual';
@@ -46,7 +47,6 @@ export function AlarmsCard({
     settings,
     activeAlarm,
     addAlarm,
-    updateAlarm,
     deleteAlarm,
     toggleAlarm,
     dismissAlarm,
@@ -59,7 +59,9 @@ export function AlarmsCard({
   const [showAddAlarm, setShowAddAlarm] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showIshaReminder, setShowIshaReminder] = useState(false);
   const [citySearch, setCitySearch] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<{
     name: string;
     country: string;
@@ -76,10 +78,17 @@ export function AlarmsCard({
   });
   const [beforeFajrMinutes, setBeforeFajrMinutes] = useState(30);
 
+  const enabledAlarmsCount = alarms.filter(a => a.enabled).length;
+
   const handleSearch = async () => {
     if (citySearch.length < 2) return;
-    const results = await onSearchCity(citySearch);
-    setSearchResults(results);
+    setIsSearching(true);
+    try {
+      const results = await onSearchCity(citySearch);
+      setSearchResults(results);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleSelectCity = (city: typeof searchResults[0]) => {
@@ -143,38 +152,51 @@ export function AlarmsCard({
   return (
     <div className="rounded-2xl bg-gradient-card border border-border overflow-hidden">
       <div className="p-5">
+        {/* Header with location display */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gold/10">
+            <div className="p-2 rounded-lg bg-gold/10 relative">
               <Bell className="h-5 w-5 text-gold" />
+              {enabledAlarmsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gold text-midnight text-xs font-bold rounded-full flex items-center justify-center">
+                  {enabledAlarmsCount}
+                </span>
+              )}
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground">Prayer Alarms</h3>
-              <p className="text-sm text-cream-dim">
-                {location.city ? `${location.city}, ${location.country}` : 'Set your location'}
-              </p>
+              <button 
+                onClick={() => setShowLocationSearch(true)}
+                className="text-sm text-cream-dim hover:text-gold transition-colors flex items-center gap-1"
+              >
+                <MapPin className="h-3 w-3" />
+                {location.city ? `${location.city}, ${location.country}` : 'Set location'}
+                <Edit2 className="h-3 w-3" />
+              </button>
             </div>
           </div>
           
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowLocationSearch(true)}
-              className="text-muted-foreground hover:text-gold"
-            >
-              <MapPin className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowSettings(true)}
-              className="text-muted-foreground hover:text-gold"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowSettings(true)}
+            className="text-muted-foreground hover:text-gold"
+            aria-label="Alarm settings"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
         </div>
+
+        {/* Location calculation info */}
+        {location.latitude && location.longitude && (
+          <div className="p-3 rounded-xl bg-secondary/20 border border-border mb-4 text-xs text-muted-foreground">
+            <p className="flex items-center gap-1">
+              <Info className="h-3 w-3" />
+              Prayer times calculated using ISNA method for coordinates: {location.latitude.toFixed(2)}°, {location.longitude.toFixed(2)}°
+              {location.mode === 'auto' && ' (auto-detected)'}
+            </p>
+          </div>
+        )}
 
         {/* Active Alarm */}
         {activeAlarm && (
@@ -216,16 +238,51 @@ export function AlarmsCard({
           </div>
         )}
 
+        {/* Isha Bedtime Reminder Section */}
+        <div className="mb-4">
+          <button
+            onClick={() => setShowIshaReminder(!showIshaReminder)}
+            className="flex items-center gap-2 text-sm text-gold/70 hover:text-gold transition-colors"
+          >
+            <Moon className="h-4 w-4" />
+            <span>Sunnah: Sleep early after Isha</span>
+            <Info className="h-3 w-3" />
+          </button>
+          
+          {showIshaReminder && (
+            <div className="mt-3 p-4 rounded-xl bg-gold/5 border border-gold/20 space-y-2">
+              <p className="text-sm text-cream-dim">{sleepAfterIshaInfo.detailedExplanation}</p>
+              <div className="p-3 rounded-lg bg-secondary/30 border border-gold/10">
+                <p className="font-arabic text-gold text-right text-sm" dir="rtl">
+                  {sleepAfterIshaInfo.hadithReference.arabicText}
+                </p>
+                <p className="text-sm text-cream-dim italic mt-2">
+                  "{sleepAfterIshaInfo.hadithReference.englishText}"
+                </p>
+                <a 
+                  href={`https://sunnah.com/bukhari:${sleepAfterIshaInfo.hadithReference.hadithNumber}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-gold hover:underline mt-1 inline-block"
+                >
+                  View on Sunnah.com →
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Quick Add Prayer Alarms */}
         {prayerTimes && (
           <div className="space-y-2 mb-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Quick Add</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Quick Add Alarms</p>
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleQuickAddFajr}
                 className="border-gold/30 text-gold hover:bg-gold/10"
+                aria-label="Add Fajr alarm"
               >
                 <Sun className="h-4 w-4 mr-1" />
                 Fajr
@@ -235,6 +292,7 @@ export function AlarmsCard({
                 variant="outline"
                 onClick={handleQuickAddIsha}
                 className="border-gold/30 text-gold hover:bg-gold/10"
+                aria-label="Add Isha alarm"
               >
                 <Moon className="h-4 w-4 mr-1" />
                 Isha
@@ -244,6 +302,7 @@ export function AlarmsCard({
                   value={beforeFajrMinutes}
                   onChange={(e) => setBeforeFajrMinutes(Number(e.target.value))}
                   className="bg-secondary border border-border rounded px-2 py-1 text-xs text-foreground"
+                  aria-label="Minutes before Fajr"
                 >
                   <option value={15}>15 min</option>
                   <option value={30}>30 min</option>
@@ -255,6 +314,7 @@ export function AlarmsCard({
                   variant="outline"
                   onClick={handleQuickAddBeforeFajr}
                   className="border-gold/30 text-gold hover:bg-gold/10"
+                  aria-label="Add alarm before Fajr"
                 >
                   Before Fajr
                 </Button>
@@ -264,41 +324,51 @@ export function AlarmsCard({
         )}
 
         {/* Alarms List */}
-        <div className="space-y-2 mb-4">
-          {alarms.map((alarm) => (
-            <div
-              key={alarm.id}
-              className={cn(
-                'p-3 rounded-xl border flex items-center justify-between',
-                alarm.enabled 
-                  ? 'bg-secondary/30 border-gold/20' 
-                  : 'bg-secondary/10 border-border'
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div className="text-center">
-                  <p className="text-xl font-bold text-foreground">{alarm.time}</p>
-                  <p className="text-xs text-cream-dim">{alarm.name}</p>
+        {alarms.length > 0 && (
+          <div className="space-y-2 mb-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+              Your Alarms ({alarms.length})
+            </p>
+            {alarms.map((alarm) => (
+              <div
+                key={alarm.id}
+                className={cn(
+                  'p-3 rounded-xl border flex items-center justify-between',
+                  alarm.enabled 
+                    ? 'bg-secondary/30 border-gold/20' 
+                    : 'bg-secondary/10 border-border opacity-60'
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="text-center">
+                    <p className={cn(
+                      'text-xl font-bold',
+                      alarm.enabled ? 'text-foreground' : 'text-muted-foreground'
+                    )}>{alarm.time}</p>
+                    <p className="text-xs text-cream-dim">{alarm.name}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={alarm.enabled}
+                    onCheckedChange={() => toggleAlarm(alarm.id)}
+                    aria-label={`Toggle ${alarm.name} alarm`}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteAlarm(alarm.id)}
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label={`Delete ${alarm.name} alarm`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={alarm.enabled}
-                  onCheckedChange={() => toggleAlarm(alarm.id)}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => deleteAlarm(alarm.id)}
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Add Alarm Button */}
         <Button
@@ -312,72 +382,104 @@ export function AlarmsCard({
 
         {/* Location Search Modal */}
         {showLocationSearch && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
             <div className="bg-midnight border border-border rounded-2xl p-6 max-w-sm w-full space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">Set Location</h3>
+                <h3 className="text-lg font-semibold text-foreground">Set Your Location</h3>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setShowLocationSearch(false)}
+                  onClick={() => {
+                    setShowLocationSearch(false);
+                    setCitySearch('');
+                    setSearchResults([]);
+                  }}
+                  aria-label="Close"
                 >
                   <X className="h-5 w-5" />
                 </Button>
               </div>
+
+              {/* Current location display */}
+              {location.city && (
+                <div className="p-3 rounded-lg bg-gold/10 border border-gold/20">
+                  <p className="text-sm text-muted-foreground">Current location:</p>
+                  <p className="text-foreground font-medium">{location.city}, {location.country}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {location.mode === 'auto' ? '(Auto-detected)' : '(Manually set)'}
+                  </p>
+                </div>
+              )}
               
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Search city..."
-                  value={citySearch}
-                  onChange={(e) => setCitySearch(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="flex-1"
-                />
-                <Button onClick={handleSearch}>
-                  <Search className="h-4 w-4" />
-                </Button>
+              {/* Search input */}
+              <div>
+                <label className="text-sm text-muted-foreground block mb-2">
+                  Search by city, zip code, or address:
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="e.g. London, 10001, or 123 Main St"
+                    value={citySearch}
+                    onChange={(e) => setCitySearch(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    className="flex-1"
+                    aria-label="Search location"
+                  />
+                  <Button onClick={handleSearch} disabled={isSearching} aria-label="Search">
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
+              {/* Search results */}
               {searchResults.length > 0 && (
                 <div className="max-h-48 overflow-y-auto space-y-1">
+                  <p className="text-xs text-muted-foreground">Select a location:</p>
                   {searchResults.map((city, i) => (
                     <button
                       key={i}
                       onClick={() => handleSelectCity(city)}
-                      className="w-full p-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 text-left transition-colors"
+                      className="w-full p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 text-left transition-colors"
                     >
-                      <p className="text-foreground">{city.name}</p>
+                      <p className="text-foreground font-medium">{city.name}</p>
                       <p className="text-xs text-muted-foreground">{city.country}</p>
                     </button>
                   ))}
                 </div>
               )}
 
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onResetLocation();
-                  setShowLocationSearch(false);
-                }}
-                className="w-full"
-              >
-                <MapPin className="h-4 w-4 mr-2" />
-                Use Auto-Detect
-              </Button>
+              {isSearching && (
+                <p className="text-sm text-muted-foreground text-center">Searching...</p>
+              )}
+
+              <div className="border-t border-border pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    onResetLocation();
+                    setShowLocationSearch(false);
+                  }}
+                  className="w-full"
+                >
+                  <MapPin className="h-4 w-4 mr-2" />
+                  Use Auto-Detect Location
+                </Button>
+              </div>
             </div>
           </div>
         )}
 
         {/* Add Alarm Modal */}
         {showAddAlarm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
             <div className="bg-midnight border border-border rounded-2xl p-6 max-w-sm w-full space-y-4 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">Add Alarm</h3>
+                <h3 className="text-lg font-semibold text-foreground">Add Custom Alarm</h3>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowAddAlarm(false)}
+                  aria-label="Close"
                 >
                   <X className="h-5 w-5" />
                 </Button>
@@ -391,15 +493,17 @@ export function AlarmsCard({
                     value={newAlarm.time}
                     onChange={(e) => setNewAlarm({ ...newAlarm, time: e.target.value })}
                     className="text-2xl font-bold text-center"
+                    aria-label="Alarm time"
                   />
                 </div>
 
                 <div>
                   <label className="text-sm text-muted-foreground">Name</label>
                   <Input
-                    placeholder="Alarm name"
+                    placeholder="e.g. Wake up for Tahajjud"
                     value={newAlarm.name}
                     onChange={(e) => setNewAlarm({ ...newAlarm, name: e.target.value })}
+                    aria-label="Alarm name"
                   />
                 </div>
 
@@ -409,6 +513,7 @@ export function AlarmsCard({
                     value={newAlarm.sound}
                     onChange={(e) => setNewAlarm({ ...newAlarm, sound: e.target.value as Alarm['sound'] })}
                     className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-foreground"
+                    aria-label="Alarm sound"
                   >
                     {soundOptions.map((s) => (
                       <option key={s.value} value={s.value}>{s.label}</option>
@@ -435,6 +540,7 @@ export function AlarmsCard({
                             ? 'bg-gold text-midnight'
                             : 'bg-secondary/50 text-muted-foreground'
                         )}
+                        aria-label={`Toggle ${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][i]}`}
                       >
                         {day}
                       </button>
@@ -448,6 +554,7 @@ export function AlarmsCard({
                     value={newAlarm.snoozeMinutes}
                     onChange={(e) => setNewAlarm({ ...newAlarm, snoozeMinutes: Number(e.target.value) })}
                     className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-foreground"
+                    aria-label="Snooze duration"
                   >
                     <option value={5}>5 minutes</option>
                     <option value={10}>10 minutes</option>
@@ -468,6 +575,7 @@ export function AlarmsCard({
                 <Button
                   onClick={handleAddAlarm}
                   className="flex-1 bg-gold text-midnight hover:bg-gold/90"
+                  disabled={!newAlarm.name || !newAlarm.time}
                 >
                   Add Alarm
                 </Button>
@@ -478,7 +586,7 @@ export function AlarmsCard({
 
         {/* Settings Modal */}
         {showSettings && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
             <div className="bg-midnight border border-border rounded-2xl p-6 max-w-sm w-full space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-foreground">Alarm Settings</h3>
@@ -486,6 +594,7 @@ export function AlarmsCard({
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSettings(false)}
+                  aria-label="Close"
                 >
                   <X className="h-5 w-5" />
                 </Button>
@@ -506,6 +615,7 @@ export function AlarmsCard({
                         saveSettings({ ...settings, notificationsEnabled: false });
                       }
                     }}
+                    aria-label="Toggle browser notifications"
                   />
                 </div>
 
@@ -519,6 +629,7 @@ export function AlarmsCard({
                     onCheckedChange={(enabled) => 
                       saveSettings({ ...settings, vibrationEnabled: enabled })
                     }
+                    aria-label="Toggle vibration"
                   />
                 </div>
 
@@ -531,6 +642,7 @@ export function AlarmsCard({
                       defaultSound: e.target.value as Alarm['sound'] 
                     })}
                     className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-foreground mt-1"
+                    aria-label="Default alarm sound"
                   >
                     {soundOptions.map((s) => (
                       <option key={s.value} value={s.value}>{s.label}</option>
@@ -551,4 +663,10 @@ export function AlarmsCard({
       </div>
     </div>
   );
+}
+
+// Export alarm count for parent components
+export function useAlarmCount() {
+  const { alarms } = useAlarms();
+  return alarms.filter(a => a.enabled).length;
 }

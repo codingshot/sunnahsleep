@@ -284,3 +284,19 @@ export const tahajjudInfo = {
     englishText: 'Our Lord descends every night to the lowest heaven when the last third of the night remains.'
   }
 };
+
+// Hadith about sleeping early after Isha
+export const sleepAfterIshaInfo = {
+  title: 'Sleep Early After Isha',
+  titleArabic: 'النوم بعد صلاة العشاء',
+  description: 'The Prophet ﷺ disliked talking after Isha prayer and recommended sleeping early',
+  detailedExplanation: 'The Prophet ﷺ used to dislike sleeping before Isha prayer and conversing (idle talk) after it. This Sunnah encourages going to sleep early after Isha to wake up refreshed for Fajr and Tahajjud prayer. It helps maintain a healthy sleep schedule aligned with natural rhythms.',
+  hadithReference: {
+    collection: 'bukhari',
+    bookNumber: 10,
+    hadithNumber: 568,
+    narrator: 'Abu Barza',
+    arabicText: 'كَانَ يَكْرَهُ النَّوْمَ قَبْلَهَا وَالْحَدِيثَ بَعْدَهَا',
+    englishText: 'The Prophet ﷺ disliked sleeping before the Isha prayer and talking after it.'
+  }
+};
