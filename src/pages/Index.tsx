@@ -51,7 +51,16 @@ const Index = () => {
     previewPrayerTimes,
   } = usePrayerTimes();
 
-  const { alarms, updateAlarm } = useAlarms();
+  const { 
+    alarms, 
+    updateAlarm, 
+    toggleAlarm, 
+    deleteAlarm,
+    upcomingAlarms,
+    nextAlarm,
+    settings,
+    requestNotificationPermission 
+  } = useAlarms();
   const enabledAlarmsCount = alarms.filter(a => a.enabled).length;
 
   // Format alarms for location dialog
@@ -98,7 +107,16 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-night islamic-pattern">
       <div className="max-w-lg mx-auto pb-8">
-        <Header streak={streak} />
+        <Header 
+          streak={streak}
+          alarms={alarms}
+          upcomingAlarms={upcomingAlarms}
+          nextAlarm={nextAlarm}
+          onToggleAlarm={toggleAlarm}
+          onDeleteAlarm={deleteAlarm}
+          notificationsEnabled={settings.notificationsEnabled}
+          onRequestNotifications={requestNotificationPermission}
+        />
 
         {/* Progress Section with Sleep Schedule */}
         <div className="px-6 mb-8">
