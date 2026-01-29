@@ -4,11 +4,15 @@ import { ChecklistCard } from '@/components/ChecklistCard';
 import { TasbihCounter } from '@/components/TasbihCounter';
 import { DuaCard } from '@/components/DuaCard';
 import { AyatKursiCard } from '@/components/AyatKursiCard';
+import { QuranVerseCard } from '@/components/QuranVerseCard';
+import { QailulahCard } from '@/components/QailulahCard';
+import { TahajjudCard } from '@/components/TahajjudCard';
 import { CompletionCelebration } from '@/components/CompletionCelebration';
 import { useChecklist } from '@/hooks/useChecklist';
-import { duas } from '@/data/checklistData';
+import { usePrayerTimes } from '@/hooks/usePrayerTimes';
+import { duas, lastTwoAyahBaqarah, threeQuls } from '@/data/checklistData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, BookOpen, Circle } from 'lucide-react';
+import { ListChecks, BookOpen, Circle, Clock, Moon, BookOpenCheck } from 'lucide-react';
 
 const Index = () => {
   const {
@@ -21,6 +25,17 @@ const Index = () => {
     progressPercentage,
     isFullyComplete,
   } = useChecklist();
+
+  const {
+    prayerTimes,
+    tahajjudSettings,
+    qailulahSettings,
+    loading,
+    initializePrayerTimes,
+    toggleTahajjud,
+    updateQailulah,
+    getRecommendedQailulahTime,
+  } = usePrayerTimes();
 
   // Group items by category
   const preparationItems = items.filter((i) => i.category === 'preparation');
@@ -42,27 +57,34 @@ const Index = () => {
         {/* Main Content */}
         <div className="px-6">
           <Tabs defaultValue="checklist" className="w-full">
-            <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1">
+            <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1 grid grid-cols-4">
               <TabsTrigger
                 value="checklist"
-                className="flex-1 data-[state=active]:bg-gold data-[state=active]:text-midnight"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs sm:text-sm"
               >
-                <ListChecks className="h-4 w-4 mr-2" />
-                Checklist
+                <ListChecks className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Checklist</span>
               </TabsTrigger>
               <TabsTrigger
-                value="duas"
-                className="flex-1 data-[state=active]:bg-gold data-[state=active]:text-midnight"
+                value="recitations"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs sm:text-sm"
               >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Duas
+                <BookOpenCheck className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Recite</span>
               </TabsTrigger>
               <TabsTrigger
                 value="tasbih"
-                className="flex-1 data-[state=active]:bg-gold data-[state=active]:text-midnight"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs sm:text-sm"
               >
-                <Circle className="h-4 w-4 mr-2" />
-                Tasbih
+                <Circle className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Tasbih</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="schedule"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs sm:text-sm"
+              >
+                <Clock className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Schedule</span>
               </TabsTrigger>
             </TabsList>
 
@@ -118,11 +140,49 @@ const Index = () => {
               </section>
             </TabsContent>
 
-            <TabsContent value="duas" className="space-y-4">
+            <TabsContent value="recitations" className="space-y-4">
               <AyatKursiCard />
-              {duas.map((dua) => (
-                <DuaCard key={dua.id} dua={dua} />
-              ))}
+              
+              <QuranVerseCard
+                title="Last Two Verses of Al-Baqarah"
+                titleArabic="آخر آيتين من سورة البقرة"
+                reference={lastTwoAyahBaqarah.reference}
+                verses={lastTwoAyahBaqarah.verses}
+                surah={2}
+                icon={<BookOpen className="h-5 w-5 text-gold" />}
+              />
+
+              {/* Three Quls */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gold uppercase tracking-wider">
+                  The Three Quls (Al-Mu'awwidhaat)
+                </h3>
+                {threeQuls.map((qul) => (
+                  <QuranVerseCard
+                    key={qul.id}
+                    title={qul.name}
+                    titleArabic={qul.nameArabic}
+                    reference={`Surah ${qul.name} (${qul.surah})`}
+                    verses={[{
+                      ayah: 1,
+                      arabic: qul.arabic,
+                      translation: qul.translation,
+                      audioUrl: qul.audioUrl
+                    }]}
+                    surah={qul.surah}
+                  />
+                ))}
+              </div>
+
+              {/* Duas */}
+              <div className="space-y-3 mt-6">
+                <h3 className="text-sm font-semibold text-gold uppercase tracking-wider">
+                  Bedtime Duas
+                </h3>
+                {duas.map((dua) => (
+                  <DuaCard key={dua.id} dua={dua} />
+                ))}
+              </div>
             </TabsContent>
 
             <TabsContent value="tasbih">
@@ -144,11 +204,27 @@ const Index = () => {
                 </p>
               </div>
             </TabsContent>
+
+            <TabsContent value="schedule" className="space-y-4">
+              <TahajjudCard
+                settings={tahajjudSettings}
+                prayerTimes={prayerTimes}
+                loading={loading}
+                onToggle={toggleTahajjud}
+                onFetchPrayerTimes={initializePrayerTimes}
+              />
+
+              <QailulahCard
+                settings={qailulahSettings}
+                recommendedTime={getRecommendedQailulahTime()}
+                onUpdateSettings={updateQailulah}
+              />
+            </TabsContent>
           </Tabs>
         </div>
 
         {/* Quranic verse footer */}
-        <div className="px-6 mt-8 text-center">
+        <footer className="px-6 mt-8 text-center">
           <p className="font-arabic text-gold/60 text-lg mb-2">
             وَهُوَ الَّذِي جَعَلَ لَكُمُ اللَّيْلَ لِبَاسًا وَالنَّوْمَ سُبَاتًا
           </p>
@@ -156,7 +232,7 @@ const Index = () => {
             "And it is He who has made the night for you as clothing and sleep [a means for] rest"
           </p>
           <p className="text-muted-foreground text-xs mt-1">Surah Al-Furqan 25:47</p>
-        </div>
+        </footer>
       </div>
 
       <CompletionCelebration isComplete={isFullyComplete} />

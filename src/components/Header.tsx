@@ -17,8 +17,8 @@ export function Header({ streak }: HeaderProps) {
             <div className="absolute inset-0 blur-lg bg-gold/30 animate-glow" />
           </div>
           <div>
-            <h1 className="text-2xl font-arabic text-gradient-gold">Islamic Sleep</h1>
-            <p className="text-sm text-cream-dim">Sunnah Bedtime Routine</p>
+            <h1 className="text-2xl font-arabic text-gradient-gold">SunnahSleep</h1>
+            <p className="text-sm text-cream-dim">Prophetic Bedtime Routine</p>
           </div>
         </div>
         
@@ -26,7 +26,7 @@ export function Header({ streak }: HeaderProps) {
           <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full border border-gold/20">
             <Flame className="h-5 w-5 text-gold" />
             <span className="font-semibold text-gold">{streak}</span>
-            <span className="text-sm text-cream-dim">day streak</span>
+            <span className="text-sm text-cream-dim hidden sm:inline">day streak</span>
           </div>
         )}
       </div>
