@@ -15,6 +15,38 @@
 
 ---
 
+## 🔄 User Flow
+
+<presentation-mermaid>
+graph TD
+    A[🌙 Open App] --> B{Evening Time?}
+    B -->|Yes| C[1️⃣ Pray Isha]
+    C --> D[2️⃣ Bedtime Preparation]
+    D --> E[Perform Wudu]
+    E --> F[Dust Bed]
+    F --> G[3️⃣ Recitations]
+    G --> H[Ayat Al-Kursi]
+    H --> I[Last 2 Ayat Al-Baqarah]
+    I --> J[Three Quls]
+    J --> K[4️⃣ Dhikr & Duas]
+    K --> L[📿 Tasbih 33-33-34]
+    L --> M[Bedtime Duas]
+    M --> N[😴 Sleep Right Side]
+    N --> O{Wake Last Third?}
+    O -->|Yes| P[🌙 Tahajjud Prayer]
+    P --> Q[5️⃣ Fajr Prayer]
+    O -->|No| Q
+    Q --> R[✅ Complete Routine]
+    
+    style A fill:#1a1a2e,stroke:#d4af37,color:#fff
+    style C fill:#1a1a2e,stroke:#d4af37,color:#fff
+    style L fill:#1a1a2e,stroke:#d4af37,color:#fff
+    style P fill:#1a1a2e,stroke:#d4af37,color:#fff
+    style R fill:#1a1a2e,stroke:#d4af37,color:#fff
+</presentation-mermaid>
+
+---
+
 ## 📖 About
 
 SunnahSleep is a privacy-focused Islamic sleep companion app that helps Muslims follow the Prophetic Sunnah before sleep. Based on authentic Hadith from Bukhari, Muslim, and other reliable sources, this app guides users through the complete bedtime routine as practiced by the Prophet Muhammad ﷺ.

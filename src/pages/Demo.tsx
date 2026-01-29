@@ -1,20 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Moon, Sun, Bell, BookOpen, Clock, CheckCircle2, 
   Heart, Sparkles, MapPin, Play, Pause, ArrowRight,
-  ChevronLeft, ChevronRight, Home, Download
+  ChevronLeft, ChevronRight, Home, Download, Share2, Twitter
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 // Import phone mockup images
-import demoChecklist from '@/assets/demo-checklist.png';
-import demoTasbih from '@/assets/demo-tasbih.png';
-import demoPrayers from '@/assets/demo-prayers.png';
-import demoQuran from '@/assets/demo-quran.png';
-import demoSleep from '@/assets/demo-sleep.png';
+import mockupChecklist from '@/assets/mockup-checklist.png';
+import mockupTasbih from '@/assets/mockup-tasbih.png';
+import mockupQuran from '@/assets/mockup-quran.png';
+import mockupSleep from '@/assets/mockup-sleep.png';
+import mockupAlarms from '@/assets/mockup-alarms.png';
 
 interface FeatureSlide {
   id: string;
@@ -42,55 +42,7 @@ const featureSlides: FeatureSlide[] = [
       'Dhikr and bedtime duas',
       'Wake up routine before Fajr'
     ],
-    image: demoChecklist
-  },
-  {
-    id: 'prayer-times',
-    title: 'Smart Prayer Times',
-    titleArabic: 'أوقات الصلاة',
-    description: 'Automatic prayer time calculation based on your location with countdowns',
-    icon: <Clock className="h-8 w-8" />,
-    color: 'from-primary/20 to-primary/5',
-    features: [
-      'Auto-detect location via IP',
-      'Manual city search worldwide',
-      'Live countdown to Isha & Fajr',
-      'Calculates optimal bedtime',
-      'Last third of night for Tahajjud'
-    ],
-    image: demoPrayers
-  },
-  {
-    id: 'alarms',
-    title: 'Prayer Alarms',
-    titleArabic: 'منبه الصلاة',
-    description: 'Never miss Fajr or Tahajjud with smart prayer-synced alarms',
-    icon: <Bell className="h-8 w-8" />,
-    color: 'from-amber-500/20 to-amber-500/5',
-    features: [
-      'Fajr & Isha prayer alarms',
-      'Tahajjud wake-up (last third)',
-      'Custom snooze settings',
-      'Auto-updates with location',
-      'Beautiful Adhan sounds'
-    ],
-    image: demoPrayers
-  },
-  {
-    id: 'tasbih',
-    title: 'Bedtime Tasbih',
-    titleArabic: 'تسبيح',
-    description: 'Complete the 33-33-34 dhikr of Fatimah ؓ before sleep',
-    icon: <Heart className="h-8 w-8" />,
-    color: 'from-rose-500/20 to-rose-500/5',
-    features: [
-      'SubhanAllah × 33',
-      'Alhamdulillah × 33',
-      'Allahu Akbar × 34',
-      'Visual progress tracking',
-      'Completion celebration'
-    ],
-    image: demoTasbih
+    image: mockupChecklist
   },
   {
     id: 'recitations',
@@ -106,7 +58,23 @@ const featureSlides: FeatureSlide[] = [
       'Three Quls (Ikhlas, Falaq, Nas)',
       'Audio playback with text'
     ],
-    image: demoQuran
+    image: mockupQuran
+  },
+  {
+    id: 'tasbih',
+    title: 'Bedtime Tasbih',
+    titleArabic: 'تسبيح',
+    description: 'Complete the 33-33-34 dhikr of Fatimah رضي الله عنها before sleep',
+    icon: <Heart className="h-8 w-8" />,
+    color: 'from-rose-500/20 to-rose-500/5',
+    features: [
+      'SubhanAllah × 33',
+      'Alhamdulillah × 33',
+      'Allahu Akbar × 34',
+      'Visual progress tracking',
+      'Completion celebration'
+    ],
+    image: mockupTasbih
   },
   {
     id: 'sleep-tracker',
@@ -122,23 +90,62 @@ const featureSlides: FeatureSlide[] = [
       'Good vs bad dream guidance',
       'Weekly statistics'
     ],
-    image: demoSleep
+    image: mockupSleep
+  },
+  {
+    id: 'alarms',
+    title: 'Prayer Alarms',
+    titleArabic: 'منبه الصلاة',
+    description: 'Never miss Fajr or Tahajjud with smart prayer-synced alarms',
+    icon: <Bell className="h-8 w-8" />,
+    color: 'from-amber-500/20 to-amber-500/5',
+    features: [
+      'Fajr & Isha prayer alarms',
+      'Tahajjud wake-up (last third)',
+      'Custom snooze settings',
+      'Auto-updates with location',
+      'Beautiful Adhan sounds'
+    ],
+    image: mockupAlarms
   }
 ];
 
 export default function Demo() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % featureSlides.length);
-  };
+  }, []);
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + featureSlides.length) % featureSlides.length);
   };
 
+  // Auto-play slideshow
+  useEffect(() => {
+    if (!isAutoPlay) return;
+    
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isAutoPlay, nextSlide]);
+
   const currentFeature = featureSlides[currentSlide];
+
+  // Share functionality
+  const shareOnTwitter = () => {
+    const text = "🌙 Just discovered SunnahSleep - an Islamic bedtime companion that helps follow the Prophetic ﷺ routine for blessed sleep!\n\n✨ Sunnah Checklist\n📖 Quran Recitations\n📿 Tasbih Counter\n⏰ Prayer Alarms\n\n100% Free & Private";
+    const url = window.location.origin;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+  };
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.origin);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -153,12 +160,22 @@ export default function Demo() {
             <Moon className="h-6 w-6 text-gold" />
             <span className="font-arabic text-xl text-gradient-gold">SunnahSleep</span>
           </div>
-          <Link to="/install">
-            <Button variant="outline" size="sm" className="border-gold/30 hover:border-gold">
-              <Download className="h-4 w-4 mr-2" />
-              Install
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={shareOnTwitter}
+              className="text-gold hover:bg-gold/10"
+            >
+              <Twitter className="h-4 w-4" />
             </Button>
-          </Link>
+            <Link to="/install">
+              <Button variant="outline" size="sm" className="border-gold/30 hover:border-gold">
+                <Download className="h-4 w-4 mr-2" />
+                Install
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -168,9 +185,28 @@ export default function Demo() {
           <h1 className="text-4xl md:text-5xl font-bold text-gradient-gold mb-4 font-arabic">
             SunnahSleep Demo
           </h1>
-          <p className="text-lg text-cream-dim max-w-2xl mx-auto">
+          <p className="text-lg text-cream-dim max-w-2xl mx-auto mb-6">
             Your Islamic sleep companion following the blessed Sunnah of Prophet Muhammad ﷺ
           </p>
+          
+          {/* Share Buttons */}
+          <div className="flex justify-center gap-3 mb-8">
+            <Button 
+              onClick={shareOnTwitter}
+              className="bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white"
+            >
+              <Twitter className="h-4 w-4 mr-2" />
+              Share on X
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={copyLink}
+              className="border-gold/30 hover:border-gold"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Copy Link
+            </Button>
+          </div>
         </section>
 
         {/* Video Section */}
@@ -181,6 +217,10 @@ export default function Demo() {
                 <video
                   className="w-full h-full object-cover"
                   controls
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
                   poster="/og-image.png"
                   onPlay={() => setIsPlaying(true)}
                   onPause={() => setIsPlaying(false)}
@@ -210,16 +250,33 @@ export default function Demo() {
 
         {/* Feature Carousel */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-8 text-foreground">
-            Explore Features
-          </h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-foreground">
+              Explore Features
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsAutoPlay(!isAutoPlay)}
+              className={cn(
+                "text-sm",
+                isAutoPlay ? "text-gold" : "text-muted-foreground"
+              )}
+            >
+              {isAutoPlay ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+              {isAutoPlay ? "Pause" : "Auto-play"}
+            </Button>
+          </div>
           
           {/* Slide Indicators */}
           <div className="flex justify-center gap-2 mb-6">
             {featureSlides.map((slide, index) => (
               <button
                 key={slide.id}
-                onClick={() => setCurrentSlide(index)}
+                onClick={() => {
+                  setCurrentSlide(index);
+                  setIsAutoPlay(false);
+                }}
                 className={cn(
                   'w-3 h-3 rounded-full transition-all duration-300',
                   index === currentSlide 
@@ -239,11 +296,11 @@ export default function Demo() {
               <div className="flex flex-col lg:flex-row items-center gap-8">
                 {/* Phone Mockup Image */}
                 <div className="flex-shrink-0 relative">
-                  <div className="w-48 md:w-56 lg:w-64 mx-auto">
+                  <div className="w-48 md:w-56 lg:w-72 mx-auto transition-all duration-500 hover:scale-105">
                     <img 
                       src={currentFeature.image} 
                       alt={`${currentFeature.title} screenshot`}
-                      className="w-full h-auto rounded-3xl shadow-2xl border border-gold/10"
+                      className="w-full h-auto drop-shadow-2xl"
                     />
                   </div>
                 </div>
@@ -287,7 +344,10 @@ export default function Demo() {
             <Button
               variant="outline"
               size="lg"
-              onClick={prevSlide}
+              onClick={() => {
+                prevSlide();
+                setIsAutoPlay(false);
+              }}
               className="border-gold/30 hover:border-gold"
             >
               <ChevronLeft className="h-5 w-5 mr-2" />
@@ -295,7 +355,10 @@ export default function Demo() {
             </Button>
             <Button
               size="lg"
-              onClick={nextSlide}
+              onClick={() => {
+                nextSlide();
+                setIsAutoPlay(false);
+              }}
               className="bg-gold text-background hover:bg-gold/90"
             >
               Next
