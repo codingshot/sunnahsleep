@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { 
   Bell, Plus, Trash2, 
-  Sun, Moon, MapPin, Search, X, Settings, Edit2, Info
+  Sun, Moon, MapPin, Search, X, Settings, Edit2, Info, Calendar, Clock, ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { useAlarms, Alarm } from '@/hooks/useAlarms';
+import { useAlarms, Alarm, UpcomingAlarm } from '@/hooks/useAlarms';
 import { PrayerTimes } from '@/types/checklist';
 import { sleepAfterIshaInfo } from '@/data/checklistData';
 
@@ -20,15 +20,19 @@ interface LocationSettings {
   timezone: string | null;
 }
 
+interface LocationSearchResult {
+  name: string;
+  displayName?: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  type?: string;
+}
+
 interface AlarmsCardProps {
   prayerTimes: PrayerTimes | null;
   location: LocationSettings;
-  onSearchCity: (query: string) => Promise<Array<{
-    name: string;
-    country: string;
-    latitude: number;
-    longitude: number;
-  }>>;
+  onSearchCity: (query: string) => Promise<LocationSearchResult[]>;
   onSetLocation: (lat: number, lng: number, city: string, country: string) => void;
   onResetLocation: () => void;
   getTimeBeforeFajr: (minutes: number) => string | null;
@@ -46,6 +50,8 @@ export function AlarmsCard({
     alarms,
     settings,
     activeAlarm,
+    upcomingAlarms,
+    nextAlarm,
     addAlarm,
     deleteAlarm,
     toggleAlarm,
@@ -60,14 +66,10 @@ export function AlarmsCard({
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showIshaReminder, setShowIshaReminder] = useState(false);
+  const [showUpcoming, setShowUpcoming] = useState(false);
   const [citySearch, setCitySearch] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<Array<{
-    name: string;
-    country: string;
-    latitude: number;
-    longitude: number;
-  }>>([]);
+  const [searchResults, setSearchResults] = useState<LocationSearchResult[]>([]);
   const [newAlarm, setNewAlarm] = useState<Partial<Alarm>>({
     name: '',
     time: '05:00',
@@ -79,6 +81,7 @@ export function AlarmsCard({
   const [beforeFajrMinutes, setBeforeFajrMinutes] = useState(30);
 
   const enabledAlarmsCount = alarms.filter(a => a.enabled).length;
+  const today = new Date();
 
   const handleSearch = async () => {
     if (citySearch.length < 2) return;
@@ -91,7 +94,7 @@ export function AlarmsCard({
     }
   };
 
-  const handleSelectCity = (city: typeof searchResults[0]) => {
+  const handleSelectCity = (city: LocationSearchResult) => {
     onSetLocation(city.latitude, city.longitude, city.name, city.country);
     setShowLocationSearch(false);
     setCitySearch('');
@@ -187,13 +190,21 @@ export function AlarmsCard({
           </Button>
         </div>
 
-        {/* Location calculation info */}
+        {/* Location & Calculation info */}
         {location.latitude && location.longitude && (
-          <div className="p-3 rounded-xl bg-secondary/20 border border-border mb-4 text-xs text-muted-foreground">
+          <div className="p-3 rounded-xl bg-secondary/20 border border-border mb-4 text-xs text-muted-foreground space-y-1">
             <p className="flex items-center gap-1">
-              <Info className="h-3 w-3" />
-              Prayer times calculated using ISNA method for coordinates: {location.latitude.toFixed(2)}°, {location.longitude.toFixed(2)}°
-              {location.mode === 'auto' && ' (auto-detected)'}
+              <Info className="h-3 w-3 flex-shrink-0" />
+              <span>
+                Prayer times calculated using <strong className="text-foreground">ISNA method</strong> for {today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </span>
+            </p>
+            <p className="text-[10px] pl-4">
+              Coordinates: {location.latitude.toFixed(4)}°, {location.longitude.toFixed(4)}° 
+              {location.mode === 'auto' ? ' (auto-detected via IP)' : ' (manually set)'}
+            </p>
+            <p className="text-[10px] pl-4 text-gold/70">
+              Times update daily based on sun position
             </p>
           </div>
         )}
@@ -216,6 +227,22 @@ export function AlarmsCard({
               >
                 Snooze {activeAlarm.snoozeMinutes}m
               </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Next Alarm Preview */}
+        {nextAlarm && !activeAlarm && (
+          <div className="p-3 rounded-xl bg-gold/10 border border-gold/20 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-gold" />
+                <span className="text-sm text-cream-dim">Next alarm:</span>
+              </div>
+              <div className="text-right">
+                <p className="text-gold font-semibold">{nextAlarm.timeString}</p>
+                <p className="text-xs text-muted-foreground">{nextAlarm.dayName} • {nextAlarm.alarm.name}</p>
+              </div>
             </div>
           </div>
         )}
@@ -246,7 +273,7 @@ export function AlarmsCard({
           >
             <Moon className="h-4 w-4" />
             <span>Sunnah: Sleep early after Isha</span>
-            <Info className="h-3 w-3" />
+            <ChevronDown className={cn("h-3 w-3 transition-transform", showIshaReminder && "rotate-180")} />
           </button>
           
           {showIshaReminder && (
@@ -323,6 +350,37 @@ export function AlarmsCard({
           </div>
         )}
 
+        {/* Upcoming Alarms for the Week */}
+        {upcomingAlarms.length > 0 && (
+          <div className="mb-4">
+            <button
+              onClick={() => setShowUpcoming(!showUpcoming)}
+              className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide hover:text-gold transition-colors w-full"
+            >
+              <Calendar className="h-3 w-3" />
+              <span>Upcoming Alarms ({upcomingAlarms.length})</span>
+              <ChevronDown className={cn("h-3 w-3 ml-auto transition-transform", showUpcoming && "rotate-180")} />
+            </button>
+            
+            {showUpcoming && (
+              <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
+                {upcomingAlarms.map((upcoming, i) => (
+                  <div
+                    key={`${upcoming.alarm.id}-${i}`}
+                    className="p-2 rounded-lg bg-secondary/20 border border-border flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-gold font-mono font-semibold">{upcoming.timeString}</span>
+                      <span className="text-xs text-muted-foreground">{upcoming.dayName}</span>
+                    </div>
+                    <span className="text-xs text-cream-dim">{upcoming.alarm.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Alarms List */}
         {alarms.length > 0 && (
           <div className="space-y-2 mb-4">
@@ -346,6 +404,14 @@ export function AlarmsCard({
                       alarm.enabled ? 'text-foreground' : 'text-muted-foreground'
                     )}>{alarm.time}</p>
                     <p className="text-xs text-cream-dim">{alarm.name}</p>
+                    {alarm.repeatDays.length > 0 && alarm.repeatDays.length < 7 && (
+                      <p className="text-[10px] text-muted-foreground">
+                        {alarm.repeatDays.map(d => ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][d]).join(', ')}
+                      </p>
+                    )}
+                    {alarm.repeatDays.length === 7 && (
+                      <p className="text-[10px] text-muted-foreground">Every day</p>
+                    )}
                   </div>
                 </div>
                 
@@ -383,7 +449,7 @@ export function AlarmsCard({
         {/* Location Search Modal */}
         {showLocationSearch && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
-            <div className="bg-midnight border border-border rounded-2xl p-6 max-w-sm w-full space-y-4">
+            <div className="bg-midnight border border-border rounded-2xl p-6 max-w-sm w-full space-y-4 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-foreground">Set Your Location</h3>
                 <Button
@@ -406,7 +472,10 @@ export function AlarmsCard({
                   <p className="text-sm text-muted-foreground">Current location:</p>
                   <p className="text-foreground font-medium">{location.city}, {location.country}</p>
                   <p className="text-xs text-muted-foreground">
-                    {location.mode === 'auto' ? '(Auto-detected)' : '(Manually set)'}
+                    {location.mode === 'auto' ? '(Auto-detected via IP)' : '(Manually set)'}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Lat: {location.latitude?.toFixed(4)}°, Lng: {location.longitude?.toFixed(4)}°
                   </p>
                 </div>
               )}
@@ -414,11 +483,11 @@ export function AlarmsCard({
               {/* Search input */}
               <div>
                 <label className="text-sm text-muted-foreground block mb-2">
-                  Search by city, zip code, or address:
+                  Search by city, zip code, address, or landmark:
                 </label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="e.g. London, 10001, or 123 Main St"
+                    placeholder="e.g. London, 10001, Masjid Al-Haram"
                     value={citySearch}
                     onChange={(e) => setCitySearch(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -429,6 +498,9 @@ export function AlarmsCard({
                     <Search className="h-4 w-4" />
                   </Button>
                 </div>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Powered by OpenStreetMap Nominatim
+                </p>
               </div>
 
               {/* Search results */}
@@ -442,17 +514,25 @@ export function AlarmsCard({
                       className="w-full p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 text-left transition-colors"
                     >
                       <p className="text-foreground font-medium">{city.name}</p>
-                      <p className="text-xs text-muted-foreground">{city.country}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {city.displayName || city.country}
+                      </p>
+                      <p className="text-[10px] text-gold/70">
+                        {city.latitude.toFixed(4)}°, {city.longitude.toFixed(4)}°
+                      </p>
                     </button>
                   ))}
                 </div>
               )}
 
               {isSearching && (
-                <p className="text-sm text-muted-foreground text-center">Searching...</p>
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <div className="animate-spin h-4 w-4 border-2 border-gold border-t-transparent rounded-full" />
+                  Searching...
+                </div>
               )}
 
-              <div className="border-t border-border pt-4">
+              <div className="border-t border-border pt-4 space-y-2">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -462,8 +542,11 @@ export function AlarmsCard({
                   className="w-full"
                 >
                   <MapPin className="h-4 w-4 mr-2" />
-                  Use Auto-Detect Location
+                  Use Auto-Detect (IP-based)
                 </Button>
+                <p className="text-[10px] text-center text-muted-foreground">
+                  Auto-detection uses your IP address - no GPS permission needed
+                </p>
               </div>
             </div>
           </div>

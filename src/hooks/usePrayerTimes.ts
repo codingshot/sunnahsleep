@@ -15,6 +15,15 @@ export interface LocationSettings {
   timezone: string | null;
 }
 
+export interface LocationSearchResult {
+  name: string;
+  displayName: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  type: string;
+}
+
 export function usePrayerTimes() {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
   const [tahajjudSettings, setTahajjudSettings] = useState<TahajjudSettings>({
@@ -63,7 +72,7 @@ export function usePrayerTimes() {
     }
   }, []);
 
-  // Auto-detect location using IP
+  // Auto-detect location using IP (no user prompt)
   const detectLocationByIP = useCallback(async () => {
     try {
       // Use ipwho.is for free HTTPS IP geolocation (CORS-enabled)
@@ -81,24 +90,7 @@ export function usePrayerTimes() {
         timezone: data.timezone?.id || null,
       };
     } catch (err) {
-      // Fallback to worldtimeapi for timezone detection, then use browser geolocation
-      try {
-        // Try browser geolocation as fallback
-        if (navigator.geolocation) {
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-          });
-          return {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            city: null,
-            country: null,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          };
-        }
-      } catch {
-        // Ultimate fallback to Mecca
-      }
+      // Fallback to Mecca
       return {
         latitude: 21.4225,
         longitude: 39.8262,
@@ -109,13 +101,49 @@ export function usePrayerTimes() {
     }
   }, []);
 
-  // Search for city
-  const searchCity = useCallback(async (query: string): Promise<Array<{
-    name: string;
-    country: string;
-    latitude: number;
-    longitude: number;
-  }>> => {
+  // Search for city using OpenStreetMap Nominatim API
+  const searchCity = useCallback(async (query: string): Promise<LocationSearchResult[]> => {
+    if (query.length < 2) return [];
+    
+    try {
+      // Use OpenStreetMap Nominatim - free, no API key required
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?` +
+        `q=${encodeURIComponent(query)}` +
+        `&format=json` +
+        `&addressdetails=1` +
+        `&limit=10` +
+        `&accept-language=en`,
+        {
+          headers: {
+            'User-Agent': 'SunnahSleep/1.0 (https://sunnahsleep.app)',
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        // Fallback to Open-Meteo geocoding
+        return await searchCityFallback(query);
+      }
+      
+      const data = await response.json();
+      
+      return data.map((r: any) => ({
+        name: r.address?.city || r.address?.town || r.address?.village || r.name || query,
+        displayName: r.display_name,
+        country: r.address?.country || '',
+        latitude: parseFloat(r.lat),
+        longitude: parseFloat(r.lon),
+        type: r.type || 'place',
+      }));
+    } catch (err) {
+      // Fallback to Open-Meteo geocoding
+      return await searchCityFallback(query);
+    }
+  }, []);
+
+  // Fallback search using Open-Meteo geocoding
+  const searchCityFallback = async (query: string): Promise<LocationSearchResult[]> => {
     try {
       const response = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`
@@ -125,23 +153,21 @@ export function usePrayerTimes() {
       const data = await response.json();
       return (data.results || []).map((r: any) => ({
         name: r.name,
+        displayName: `${r.name}, ${r.admin1 || ''} ${r.country}`.trim(),
         country: r.country,
         latitude: r.latitude,
         longitude: r.longitude,
+        type: 'city',
       }));
     } catch {
       return [];
     }
-  }, []);
+  };
 
-  // Fetch prayer times based on coordinates
-  const fetchPrayerTimes = useCallback(async (latitude: number, longitude: number) => {
-    setLoading(true);
-    setError(null);
-    
+  // Fetch prayer times based on coordinates for a specific date
+  const fetchPrayerTimesForDate = useCallback(async (latitude: number, longitude: number, date: Date) => {
     try {
-      const today = new Date();
-      const dateStr = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+      const dateStr = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
       
       const response = await fetch(
         `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${latitude}&longitude=${longitude}&method=2`
@@ -152,7 +178,7 @@ export function usePrayerTimes() {
       const data = await response.json();
       const timings = data.data.timings;
       
-      const times: PrayerTimes = {
+      return {
         fajr: timings.Fajr,
         sunrise: timings.Sunrise,
         dhuhr: timings.Dhuhr,
@@ -160,6 +186,21 @@ export function usePrayerTimes() {
         maghrib: timings.Maghrib,
         isha: timings.Isha,
       };
+    } catch (err) {
+      return null;
+    }
+  }, []);
+
+  // Fetch prayer times based on coordinates (today)
+  const fetchPrayerTimes = useCallback(async (latitude: number, longitude: number) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const today = new Date();
+      const times = await fetchPrayerTimesForDate(latitude, longitude, today);
+      
+      if (!times) throw new Error('Failed to fetch prayer times');
       
       setPrayerTimes(times);
       localStorage.setItem(PRAYER_TIMES_KEY, JSON.stringify({
@@ -177,7 +218,7 @@ export function usePrayerTimes() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchPrayerTimesForDate]);
 
   // Initialize prayer times using IP-based detection (no user prompt)
   const initializePrayerTimes = useCallback(async () => {
@@ -287,6 +328,12 @@ export function usePrayerTimes() {
     return `${fajrDate.getHours().toString().padStart(2, '0')}:${fajrDate.getMinutes().toString().padStart(2, '0')}`;
   };
 
+  // Get prayer times for a specific date (for weekly view)
+  const getPrayerTimesForDate = useCallback(async (date: Date) => {
+    if (!location.latitude || !location.longitude) return null;
+    return await fetchPrayerTimesForDate(location.latitude, location.longitude, date);
+  }, [location, fetchPrayerTimesForDate]);
+
   // Toggle Tahajjud alarm
   const toggleTahajjud = (enabled: boolean) => {
     setTahajjudSettings(prev => {
@@ -333,6 +380,7 @@ export function usePrayerTimes() {
     updateQailulah,
     getRecommendedQailulahTime,
     getTimeBeforeFajr,
+    getPrayerTimesForDate,
     setManualLocation,
     resetToAutoLocation,
     searchCity,
