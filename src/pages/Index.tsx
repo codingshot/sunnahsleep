@@ -296,8 +296,33 @@ const Index = () => {
                           </Button>
                         </Link>
                       )}
+                      {item.id === 'right-side' && (
+                        <Link to="/prophetic-sleep">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="mt-2 text-gold hover:bg-gold/10 w-full justify-start"
+                          >
+                            <Moon className="h-4 w-4 mr-2" />
+                            Learn How the Prophet ﷺ Slept →
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   ))}
+                  {/* Quick links to related resources */}
+                  <div className="pt-2 flex flex-wrap gap-2">
+                    <Link to="/prophetic-sleep#miswak">
+                      <Button variant="outline" size="sm" className="text-xs border-gold/20 text-cream-dim hover:text-gold hover:border-gold/40">
+                        Miswak Guide
+                      </Button>
+                    </Link>
+                    <Link to="/prophetic-sleep#bedding">
+                      <Button variant="outline" size="sm" className="text-xs border-gold/20 text-cream-dim hover:text-gold hover:border-gold/40">
+                        Prophet's ﷺ Bedding
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </section>
 
