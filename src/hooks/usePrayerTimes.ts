@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PrayerTimes, TahajjudSettings, QailulahSettings } from '@/types/checklist';
+import { getStorageJson, setStorageJson } from '@/lib/storage';
+import { fetchWithTimeout } from '@/lib/fetch';
 
 const PRAYER_TIMES_KEY = 'sunnahSleepPrayerTimes';
 const TAHAJJUD_KEY = 'sunnahSleepTahajjud';
@@ -49,34 +51,24 @@ export function usePrayerTimes() {
 
   // Load saved settings
   useEffect(() => {
-    const savedTahajjud = localStorage.getItem(TAHAJJUD_KEY);
-    const savedQailulah = localStorage.getItem(QAILULAH_KEY);
-    const savedPrayerTimes = localStorage.getItem(PRAYER_TIMES_KEY);
-    const savedLocation = localStorage.getItem(LOCATION_KEY);
+    const savedTahajjud = getStorageJson<TahajjudSettings>(TAHAJJUD_KEY);
+    const savedQailulah = getStorageJson<QailulahSettings>(QAILULAH_KEY);
+    const savedPrayerTimes = getStorageJson<{ times: PrayerTimes; date: string }>(PRAYER_TIMES_KEY);
+    const savedLocation = getStorageJson<LocationSettings>(LOCATION_KEY);
 
-    if (savedTahajjud) {
-      setTahajjudSettings(JSON.parse(savedTahajjud));
-    }
-    if (savedQailulah) {
-      setQailulahSettings(JSON.parse(savedQailulah));
-    }
-    if (savedLocation) {
-      setLocation(JSON.parse(savedLocation));
-    }
+    if (savedTahajjud) setTahajjudSettings(savedTahajjud);
+    if (savedQailulah) setQailulahSettings(savedQailulah);
+    if (savedLocation) setLocation(savedLocation);
     if (savedPrayerTimes) {
-      const { times, date } = JSON.parse(savedPrayerTimes);
       const today = new Date().toISOString().split('T')[0];
-      if (date === today) {
-        setPrayerTimes(times);
-      }
+      if (savedPrayerTimes.date === today) setPrayerTimes(savedPrayerTimes.times);
     }
   }, []);
 
   // Auto-detect location using IP (no user prompt)
   const detectLocationByIP = useCallback(async () => {
     try {
-      // Use ipwho.is for free HTTPS IP geolocation (CORS-enabled)
-      const response = await fetch('https://ipwho.is/');
+      const response = await fetchWithTimeout('https://ipwho.is/');
       if (!response.ok) throw new Error('Failed to detect location');
       
       const data = await response.json();
@@ -106,8 +98,7 @@ export function usePrayerTimes() {
     if (query.length < 2) return [];
     
     try {
-      // Use OpenStreetMap Nominatim - free, no API key required
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `https://nominatim.openstreetmap.org/search?` +
         `q=${encodeURIComponent(query)}` +
         `&format=json` +
@@ -115,10 +106,9 @@ export function usePrayerTimes() {
         `&limit=10` +
         `&accept-language=en`,
         {
-          headers: {
-            'User-Agent': 'SunnahSleep/1.0 (https://sunnahsleep.app)',
-          },
-        }
+          headers: { 'User-Agent': 'SunnahSleep/1.0 (https://sunnahsleep.app)' },
+        },
+        8000
       );
       
       if (!response.ok) {
@@ -145,7 +135,7 @@ export function usePrayerTimes() {
   // Fallback search using Open-Meteo geocoding
   const searchCityFallback = async (query: string): Promise<LocationSearchResult[]> => {
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`
       );
       if (!response.ok) return [];
@@ -168,21 +158,23 @@ export function usePrayerTimes() {
   const fetchPrayerTimesForDate = useCallback(async (latitude: number, longitude: number, date: Date) => {
     try {
       const dateStr = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
-      
-      const response = await fetch(
-        `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${latitude}&longitude=${longitude}&method=2`
+      const response = await fetchWithTimeout(
+        `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${latitude}&longitude=${longitude}&method=2`,
+        {},
+        10000
       );
       
       if (!response.ok) throw new Error('Failed to fetch prayer times');
       
       const data = await response.json();
-      const timings = data.data.timings;
+      const timings = data?.data?.timings;
+      if (!timings || !timings.Fajr || !timings.Isha) return null;
       
       return {
         fajr: timings.Fajr,
-        sunrise: timings.Sunrise,
-        dhuhr: timings.Dhuhr,
-        asr: timings.Asr,
+        sunrise: timings.Sunrise ?? timings.Fajr,
+        dhuhr: timings.Dhuhr ?? '12:00',
+        asr: timings.Asr ?? '15:00',
         maghrib: timings.Maghrib,
         isha: timings.Isha,
       };
@@ -203,10 +195,7 @@ export function usePrayerTimes() {
       if (!times) throw new Error('Failed to fetch prayer times');
       
       setPrayerTimes(times);
-      localStorage.setItem(PRAYER_TIMES_KEY, JSON.stringify({
-        times,
-        date: today.toISOString().split('T')[0]
-      }));
+      setStorageJson(PRAYER_TIMES_KEY, { times, date: today.toISOString().split('T')[0] });
       
       // Calculate Tahajjud time
       calculateTahajjudTime(times);
@@ -244,7 +233,7 @@ export function usePrayerTimes() {
         timezone: coords.timezone || null,
       };
       setLocation(newLocation);
-      localStorage.setItem(LOCATION_KEY, JSON.stringify(newLocation));
+      setStorageJson(LOCATION_KEY, newLocation);
       
       await fetchPrayerTimes(coords.latitude, coords.longitude);
     } catch (err) {
@@ -270,7 +259,7 @@ export function usePrayerTimes() {
       timezone: null,
     };
     setLocation(newLocation);
-    localStorage.setItem(LOCATION_KEY, JSON.stringify(newLocation));
+    setStorageJson(LOCATION_KEY, newLocation);
     
     await fetchPrayerTimes(latitude, longitude);
   }, [fetchPrayerTimes]);
@@ -283,7 +272,7 @@ export function usePrayerTimes() {
       ...coords,
     };
     setLocation(newLocation);
-    localStorage.setItem(LOCATION_KEY, JSON.stringify(newLocation));
+    setStorageJson(LOCATION_KEY, newLocation);
     
     await fetchPrayerTimes(coords.latitude, coords.longitude);
   }, [detectLocationByIP, fetchPrayerTimes]);
@@ -312,19 +301,21 @@ export function usePrayerTimes() {
     
     setTahajjudSettings(prev => {
       const updated = { ...prev, calculatedTime: tahajjudTime };
-      localStorage.setItem(TAHAJJUD_KEY, JSON.stringify(updated));
+      setStorageJson(TAHAJJUD_KEY, updated);
       return updated;
     });
   };
 
   // Calculate time before Fajr
   const getTimeBeforeFajr = (minutes: number): string | null => {
-    if (!prayerTimes) return null;
-    
-    const [hours, mins] = prayerTimes.fajr.split(':').map(Number);
+    if (!prayerTimes?.fajr) return null;
+    const match = /^(\d{1,2}):(\d{2})$/.exec(prayerTimes.fajr.trim());
+    if (!match) return null;
+    const hours = parseInt(match[1], 10);
+    const mins = parseInt(match[2], 10);
+    if (isNaN(hours) || isNaN(mins)) return null;
     const fajrDate = new Date();
     fajrDate.setHours(hours, mins - minutes, 0, 0);
-    
     return `${fajrDate.getHours().toString().padStart(2, '0')}:${fajrDate.getMinutes().toString().padStart(2, '0')}`;
   };
 
@@ -352,7 +343,7 @@ export function usePrayerTimes() {
         enabled,
         alarmTime: enabled ? prev.calculatedTime : null,
       };
-      localStorage.setItem(TAHAJJUD_KEY, JSON.stringify(updated));
+      setStorageJson(TAHAJJUD_KEY, updated);
       return updated;
     });
   };
@@ -361,7 +352,7 @@ export function usePrayerTimes() {
   const updateQailulah = (settings: Partial<QailulahSettings>) => {
     setQailulahSettings(prev => {
       const updated = { ...prev, ...settings };
-      localStorage.setItem(QAILULAH_KEY, JSON.stringify(updated));
+      setStorageJson(QAILULAH_KEY, updated);
       return updated;
     });
   };

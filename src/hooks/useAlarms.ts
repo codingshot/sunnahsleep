@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
+import { getStorageJson, setStorageJson } from '@/lib/storage';
 
 export interface Alarm {
   id: string;
@@ -60,24 +61,23 @@ export function useAlarms() {
 
   // Load data
   useEffect(() => {
-    const savedAlarms = localStorage.getItem(ALARMS_KEY);
-    const savedSettings = localStorage.getItem(ALARM_SETTINGS_KEY);
-    const savedSnoozed = localStorage.getItem(SNOOZED_ALARMS_KEY);
-    
-    if (savedAlarms) setAlarms(JSON.parse(savedAlarms));
-    if (savedSettings) setSettings(JSON.parse(savedSettings));
-    if (savedSnoozed) setSnoozedAlarms(JSON.parse(savedSnoozed));
+    const savedAlarms = getStorageJson<Alarm[]>(ALARMS_KEY);
+    const savedSettings = getStorageJson<AlarmSettings>(ALARM_SETTINGS_KEY);
+    const savedSnoozed = getStorageJson<Record<string, number>>(SNOOZED_ALARMS_KEY);
+    if (Array.isArray(savedAlarms)) setAlarms(savedAlarms);
+    if (savedSettings) setSettings(savedSettings);
+    if (savedSnoozed) setSnoozedAlarms(savedSnoozed);
   }, []);
 
   // Save alarms
   const saveAlarms = useCallback((newAlarms: Alarm[]) => {
-    localStorage.setItem(ALARMS_KEY, JSON.stringify(newAlarms));
+    setStorageJson(ALARMS_KEY, newAlarms);
     setAlarms(newAlarms);
   }, []);
 
   // Save settings
   const saveSettings = useCallback((newSettings: AlarmSettings) => {
-    localStorage.setItem(ALARM_SETTINGS_KEY, JSON.stringify(newSettings));
+    setStorageJson(ALARM_SETTINGS_KEY, newSettings);
     setSettings(newSettings);
   }, []);
 
@@ -185,7 +185,7 @@ export function useAlarms() {
     const snoozeUntil = Date.now() + snoozeTime * 60 * 1000;
     
     const newSnoozed = { ...snoozedAlarms, [activeAlarm.id]: snoozeUntil };
-    localStorage.setItem(SNOOZED_ALARMS_KEY, JSON.stringify(newSnoozed));
+    setStorageJson(SNOOZED_ALARMS_KEY, newSnoozed);
     setSnoozedAlarms(newSnoozed);
     
     stopAlarmSound();
@@ -212,7 +212,7 @@ export function useAlarms() {
       if (snoozedAlarms[alarm.id] && snoozedAlarms[alarm.id] <= Date.now()) {
         const newSnoozed = { ...snoozedAlarms };
         delete newSnoozed[alarm.id];
-        localStorage.setItem(SNOOZED_ALARMS_KEY, JSON.stringify(newSnoozed));
+        setStorageJson(SNOOZED_ALARMS_KEY, newSnoozed);
         setSnoozedAlarms(newSnoozed);
         triggerAlarm(alarm);
         return;

@@ -44,15 +44,22 @@ export function SleepTimeCalculator({
 }: SleepTimeCalculatorProps) {
   const [showLocationDialog, setShowLocationDialog] = useState(false);
 
-  if (!prayerTimes) return null;
+  if (!prayerTimes?.isha || !prayerTimes?.fajr) return null;
 
-  // Calculate recommended bedtime (30 min after Isha)
-  const parseTime = (timeStr: string): Date => {
-    const [hours, minutes] = timeStr.split(':').map(Number);
+  const parseTime = (timeStr: string): Date | null => {
+    const parsed = /^(\d{1,2}):(\d{2})$/.exec(timeStr?.trim() || '');
+    if (!parsed) return null;
+    const hours = parseInt(parsed[1], 10);
+    const minutes = parseInt(parsed[2], 10);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
     const date = new Date();
     date.setHours(hours, minutes, 0, 0);
     return date;
   };
+
+  const ishaDate = parseTime(prayerTimes.isha);
+  const fajrDate = parseTime(prayerTimes.fajr);
+  if (!ishaDate || !fajrDate) return null;
 
   const formatTime = (date: Date): string => {
     return date.toLocaleTimeString('en-US', { 
@@ -62,13 +69,9 @@ export function SleepTimeCalculator({
     });
   };
 
-  const isha = parseTime(prayerTimes.isha);
-  const fajr = parseTime(prayerTimes.fajr);
-  
-  // If fajr is before isha, it's next day
-  if (fajr < isha) {
-    fajr.setDate(fajr.getDate() + 1);
-  }
+  const isha = ishaDate;
+  const fajr = new Date(fajrDate);
+  if (fajr < isha) fajr.setDate(fajr.getDate() + 1);
 
   // Recommended bedtime: 30 minutes after Isha
   const bedtime = new Date(isha.getTime() + 30 * 60 * 1000);
@@ -76,8 +79,8 @@ export function SleepTimeCalculator({
   // Recommended wake time: 30 minutes before Fajr (for Tahajjud/Sunnah)
   const wakeTime = new Date(fajr.getTime() - 30 * 60 * 1000);
   
-  // Calculate total sleep duration
-  const sleepDurationMs = wakeTime.getTime() - bedtime.getTime();
+  // Calculate total sleep duration (clamp negative for edge cases e.g. polar regions)
+  const sleepDurationMs = Math.max(0, wakeTime.getTime() - bedtime.getTime());
   const sleepHours = Math.floor(sleepDurationMs / (1000 * 60 * 60));
   const sleepMinutes = Math.floor((sleepDurationMs % (1000 * 60 * 60)) / (1000 * 60));
 

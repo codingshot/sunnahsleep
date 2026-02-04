@@ -10,6 +10,8 @@ export interface BlogArticle {
   readingTime: number;
   featured: boolean;
   tableOfContents: { id: string; title: string }[];
+  /** ISO date for Article schema & SEO */
+  publishedDate?: string;
 }
 
 export const blogArticles: BlogArticle[] = [

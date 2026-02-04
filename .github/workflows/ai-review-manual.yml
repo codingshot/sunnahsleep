@@ -1,0 +1,75 @@
+# Manual trigger to post PR context for AI review (OpenClaw, Moltbot, etc.)
+# Run from Actions tab when you want a summary comment for AI agents.
+
+name: AI Review Context
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to comment on (default: most recent open PR)'
+        required: false
+        type: number
+
+jobs:
+  post-context:
+    name: Post PR context
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get PR and post context
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const inputs = context.payload.inputs || {};
+            let prNum = inputs.pr_number ? parseInt(inputs.pr_number, 10) : null;
+            if (!prNum || isNaN(prNum)) {
+              const list = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              sort: 'created',
+              direction: 'desc'
+            });
+              prNum = list.data[0]?.number;
+            }
+            if (!prNum) throw new Error('No open PR found');
+            const pr = (await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNum
+            })).data;
+            const files = (await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNum
+            })).data;
+            const fileList = files.map(f => `- ${f.status}: ${f.filename}`).join('\n');
+            const body = `## 🤖 AI Review Context
+
+**PR #${prNum}:** ${pr.title}
+
+**Description:**
+${pr.body || '(none)'}
+
+**Files changed:**
+${fileList}
+
+**Guidance for AI review:**
+- Project context: \`.github/AGENT-CONTEXT.md\`
+- Islamic content: \`.cursor/skills/fact-check-sunnah-quran/\`
+- Storage: \`.cursor/skills/local-storage-security/\`
+- APIs: \`.cursor/skills/api-integrations/\`
+- Run \`npm run lint\` and \`npm run test\` before suggesting fixes.
+`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNum,
+              body: body
+            });
+            core.notice('Posted context to PR #' + prNum);

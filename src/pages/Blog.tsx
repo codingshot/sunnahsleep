@@ -2,22 +2,16 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Clock, BookOpen, Moon, Heart, Sparkles, ChevronRight } from 'lucide-react';
 import { blogArticles, getFeaturedArticles, BlogArticle } from '@/data/blogData';
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function Blog() {
-  // Update document title for SEO
-  useEffect(() => {
-    document.title = 'Islamic Sleep Guide: Sunnah Sleep Articles & Prophetic Practices | SunnahSleep';
-    
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute('content', 'Learn about Islamic sleep practices, Sunnah bedtime routines, and prophetic guidance for blessed rest. Articles on Tahajjud, Ayat al-Kursi, bedtime duas, and more.');
-    }
-    
-    return () => {
-      document.title = 'SunnahSleep - Islamic Bedtime Companion';
-    };
-  }, []);
+  usePageMeta({
+    title: 'Islamic Sleep Guide: Sunnah Sleep Articles & Prophetic Practices | SunnahSleep',
+    description: 'Learn about Islamic sleep practices, Sunnah bedtime routines, and prophetic guidance for blessed rest. Articles on Tahajjud, Ayat al-Kursi, bedtime duas, Qailulah, and more.',
+    canonical: 'https://sunnahsleep.app/blog',
+    ogTitle: 'Islamic Sleep Guide: Sunnah Sleep Articles & Prophetic Practices',
+    keywords: ['Islamic sleep articles', 'Sunnah sleep guide', 'Prophetic sleep', 'Tahajjud', 'Ayat al-Kursi', 'bedtime duas', 'Qailulah'],
+  });
 
   const featuredArticles = getFeaturedArticles();
   const regularArticles = blogArticles.filter(a => !a.featured);

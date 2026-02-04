@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sunnahsleep.app/schemas/fiqh-clarification.json",
+  "title": "FiqhClarification",
+  "description": "Locale-specific fiqh note for content that may vary by madhab or region",
+  "type": "object",
+  "required": ["contentId", "locale", "note"],
+  "properties": {
+    "contentId": {
+      "type": "string",
+      "description": "Reference to checklist/dua/hadith ID"
+    },
+    "locale": {
+      "type": "string",
+      "enum": ["ar", "ur", "tr", "id", "ms", "fr", "en"]
+    },
+    "note": {
+      "type": "string",
+      "description": "Short clarification for this locale (e.g. Hanafi view on wiping over socks)"
+    },
+    "school": {
+      "type": "string",
+      "enum": ["hanafi", "maliki", "shafii", "hanbali"],
+      "description": "Optional: which school this note applies to"
+    }
+  }
+}

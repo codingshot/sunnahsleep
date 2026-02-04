@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { 
   Moon, Home, ChevronRight, BookOpen, Bed, 
   Heart, CheckCircle2, ArrowRight, ExternalLink,
@@ -90,28 +90,12 @@ const SunnahChecklist = ({ items }: { items: ChecklistItemProps[] }) => (
 );
 
 export default function PropheticSleep() {
-  // Update document title and meta for SEO
-  useEffect(() => {
-    document.title = SEO.title;
-    
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute('content', SEO.description);
-    }
-    
-    // Add keywords meta
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.setAttribute('name', 'keywords');
-      document.head.appendChild(metaKeywords);
-    }
-    metaKeywords.setAttribute('content', SEO.keywords.join(', '));
-    
-    return () => {
-      document.title = 'SunnahSleep - Islamic Bedtime Companion';
-    };
-  }, []);
+  usePageMeta({
+    title: SEO.title,
+    description: SEO.description,
+    canonical: 'https://sunnahsleep.app/prophetic-sleep',
+    keywords: SEO.keywords,
+  });
 
   const beddingChecklistItems: ChecklistItemProps[] = [
     {

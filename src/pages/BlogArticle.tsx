@@ -3,27 +3,23 @@ import { ArrowLeft, Clock, BookOpen, ChevronRight } from 'lucide-react';
 import { getBlogArticleBySlug, blogArticles, BlogArticle } from '@/data/blogData';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
+
+const BASE_URL = 'https://sunnahsleep.app';
 
 export default function BlogArticlePage() {
   const { slug } = useParams<{ slug: string }>();
   const article = slug ? getBlogArticleBySlug(slug) : undefined;
 
-  // Update document title and meta for SEO
-  useEffect(() => {
-    if (article) {
-      document.title = article.metaTitle;
-      
-      // Update meta description
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) {
-        metaDesc.setAttribute('content', article.metaDescription);
-      }
-    }
-    
-    return () => {
-      document.title = 'SunnahSleep - Islamic Bedtime Companion';
-    };
-  }, [article]);
+  const canonical = article ? `${BASE_URL}/blog/${article.slug}` : undefined;
+  usePageMeta(article ? {
+    title: article.metaTitle,
+    description: article.metaDescription,
+    canonical,
+    ogTitle: article.title,
+    ogDescription: article.excerpt || article.metaDescription,
+    keywords: article.keywords,
+  } : null);
 
   if (!article) {
     return (
@@ -99,6 +95,9 @@ export default function BlogArticlePage() {
             <meta itemProp="name" content="Ummah.Build" />
           </span>
         </header>
+
+        {/* Article JSON-LD for AI/search engines */}
+        <ArticleSchema article={article} />
 
         {/* Table of Contents */}
         {article.tableOfContents.length > 0 && (
@@ -204,5 +203,27 @@ export default function BlogArticlePage() {
         </footer>
       </article>
     </div>
+  );
+}
+
+function ArticleSchema({ article }: { article: BlogArticle }) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.metaDescription,
+    datePublished: article.publishedDate ?? '2025-01-15',
+    dateModified: article.publishedDate ?? '2025-01-15',
+    author: { '@type': 'Organization', name: 'Ummah.Build', url: 'https://ummah.build' },
+    publisher: { '@type': 'Organization', name: 'Ummah.Build', url: 'https://ummah.build' },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${BASE_URL}/blog/${article.slug}` },
+    url: `${BASE_URL}/blog/${article.slug}`,
+    image: `${BASE_URL}/og-image.png`,
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
   );
 }

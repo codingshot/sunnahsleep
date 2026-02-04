@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sunnahsleep.app/schemas/checklist-item-content.json",
+  "title": "ChecklistItemContent",
+  "description": "Checklist or Dua item with Arabic, transliteration, translations, and optional fiqh clarifications",
+  "type": "object",
+  "required": ["id", "arabic", "transliteration", "translations"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Stable content ID (never translated)"
+    },
+    "arabic": {
+      "type": "string",
+      "description": "Original Arabic text (U+0600–U+06FF)"
+    },
+    "transliteration": {
+      "type": "string",
+      "description": "Romanized Arabic for non-Arabic readers"
+    },
+    "translations": {
+      "type": "object",
+      "description": "Translations by locale code (en, ar, ur, tr, id, ms, fr)",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "detailedExplanation": { "type": "string" }
+        }
+      }
+    },
+    "hadithReference": {
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string" },
+        "bookNumber": { "type": "number" },
+        "hadithNumber": { "type": "number" },
+        "narrator": { "type": "string" },
+        "arabicText": { "type": "string" },
+        "translations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "fiqhClarifications": {
+      "type": "object",
+      "description": "Locale-specific fiqh notes where scholarly views differ by madhab or region",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "note": { "type": "string" },
+            "school": {
+              "type": "string",
+              "enum": ["hanafi", "maliki", "shafii", "hanbali"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

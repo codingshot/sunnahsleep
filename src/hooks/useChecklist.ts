@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChecklistItem, TasbihCount } from '@/types/checklist';
 import { checklistItems as initialItems } from '@/data/checklistData';
+import { getStorageJson, setStorageJson } from '@/lib/storage';
 
 const STORAGE_KEY = 'islamicSleep';
 const STREAK_KEY = 'islamicSleepStreak';
@@ -24,11 +25,11 @@ export function useChecklist() {
 
   // Load data from localStorage
   useEffect(() => {
-    const storedData = localStorage.getItem(STORAGE_KEY);
-    const storedStreak = localStorage.getItem(STREAK_KEY);
+    const storedData = getStorageJson<StoredData>(STORAGE_KEY);
+    const storedStreak = getStorageJson<{ count: number; lastDate: string }>(STREAK_KEY);
 
     if (storedStreak) {
-      const { count, lastDate } = JSON.parse(storedStreak);
+      const { count, lastDate } = storedStreak;
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = yesterday.toISOString().split('T')[0];
@@ -41,15 +42,14 @@ export function useChecklist() {
     }
 
     if (storedData) {
-      const data: StoredData = JSON.parse(storedData);
-      if (data.date === today) {
+      if (storedData.date === today) {
         setItems((prev) =>
           prev.map((item) => ({
             ...item,
-            completed: data.items[item.id] || false,
+            completed: storedData.items[item.id] || false,
           }))
         );
-        setTasbih(data.tasbih || { subhanAllah: 0, alhamdulillah: 0, allahuAkbar: 0 });
+        setTasbih(storedData.tasbih || { subhanAllah: 0, alhamdulillah: 0, allahuAkbar: 0 });
       }
     }
   }, [today]);
@@ -62,7 +62,7 @@ export function useChecklist() {
         items: newItems.reduce((acc, item) => ({ ...acc, [item.id]: item.completed }), {}),
         tasbih: newTasbih,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      setStorageJson(STORAGE_KEY, data);
     },
     [today]
   );
@@ -113,11 +113,11 @@ export function useChecklist() {
   // Update streak when fully complete
   useEffect(() => {
     if (isFullyComplete) {
-      const storedStreak = localStorage.getItem(STREAK_KEY);
+      const storedStreak = getStorageJson<{ count: number; lastDate: string }>(STREAK_KEY);
       let newStreak = 1;
 
       if (storedStreak) {
-        const { count, lastDate } = JSON.parse(storedStreak);
+        const { count, lastDate } = storedStreak;
         if (lastDate !== today) {
           const yesterday = new Date();
           yesterday.setDate(yesterday.getDate() - 1);
@@ -129,7 +129,7 @@ export function useChecklist() {
       }
 
       setStreak(newStreak);
-      localStorage.setItem(STREAK_KEY, JSON.stringify({ count: newStreak, lastDate: today }));
+      setStorageJson(STREAK_KEY, { count: newStreak, lastDate: today });
     }
   }, [isFullyComplete, today]);
 

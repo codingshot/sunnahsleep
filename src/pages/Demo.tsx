@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { 
   Moon, Sun, Bell, BookOpen, Clock, CheckCircle2, 
   Heart, Sparkles, MapPin, Play, Pause, ArrowRight,
@@ -111,6 +112,13 @@ const featureSlides: FeatureSlide[] = [
 ];
 
 export default function Demo() {
+  usePageMeta({
+    title: 'SunnahSleep Demo: See the App in Action | Islamic Sleep Companion',
+    description: 'Watch the SunnahSleep app demo. See the Sunnah checklist, Quran recitations, Tasbih counter, sleep tracker, and prayer alarms in action.',
+    canonical: 'https://sunnahsleep.app/demo',
+    keywords: ['SunnahSleep demo', 'Islamic sleep app demo', 'Prophetic bedtime app'],
+  });
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAutoPlay, setIsAutoPlay] = useState(true);

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { 
   Moon, Bell, BookOpen, Clock, CheckCircle2, 
   Heart, MapPin, ArrowRight, Home, ChevronRight,
@@ -205,6 +206,13 @@ const guideSections: GuideSection[] = [
 ];
 
 export default function Guides() {
+  usePageMeta({
+    title: 'SunnahSleep Guides: How to Use the App | Sunnah Sleep Companion',
+    description: 'Learn how to use SunnahSleep: Sunnah checklist, Quran recitations, Tasbih counter, sleep tracker, and prayer alarms. Step-by-step guides for the Prophetic bedtime routine.',
+    canonical: 'https://sunnahsleep.app/guides',
+    keywords: ['SunnahSleep guide', 'how to use SunnahSleep', 'Islamic sleep app', 'Prophetic bedtime routine'],
+  });
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}

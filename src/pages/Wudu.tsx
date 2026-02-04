@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Pause, Droplets, CheckCircle2, Volume2, VolumeX, Keybo
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 interface WuduStep {
   id: number;
@@ -243,6 +244,12 @@ const StepIcon = ({ stepId, className }: { stepId: number; className?: string })
 };
 
 export default function Wudu() {
+  usePageMeta({
+    title: 'How to Perform Wudu - Step by Step Guide | SunnahSleep',
+    description: 'Learn the complete wudu (ablution) steps with hadith references. Step-by-step guide with Arabic, transliteration, and translations. Sunnah of the Prophet ﷺ before prayer and sleep.',
+    canonical: 'https://sunnahsleep.app/wudu',
+    keywords: ['wudu', 'ablution', 'islamic ablution', 'how to do wudu', 'wudu steps', 'sunnah wudu'],
+  });
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [activeStep, setActiveStep] = useState(1);
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);

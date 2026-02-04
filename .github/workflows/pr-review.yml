@@ -1,0 +1,28 @@
+# PR Review Support
+# Runs on PRs. Use with OpenClaw/Moltbot: they can fetch PR via `gh pr view` and
+# use .github/AGENT-CONTEXT.md for review guidance. Add AI review action if desired.
+
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-check:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build

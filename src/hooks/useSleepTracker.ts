@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getStorageJson, setStorageJson } from '@/lib/storage';
 
 export interface SleepRecord {
   id: string;
@@ -21,23 +22,18 @@ export function useSleepTracker() {
 
   // Load data on mount
   useEffect(() => {
-    const savedRecords = localStorage.getItem(SLEEP_RECORDS_KEY);
-    const savedCurrent = localStorage.getItem(CURRENT_SLEEP_KEY);
-    
-    if (savedRecords) {
-      setSleepRecords(JSON.parse(savedRecords));
-    }
-    
+    const savedRecords = getStorageJson<SleepRecord[]>(SLEEP_RECORDS_KEY);
+    const savedCurrent = getStorageJson<Partial<SleepRecord>>(CURRENT_SLEEP_KEY);
+    if (Array.isArray(savedRecords)) setSleepRecords(savedRecords);
     if (savedCurrent) {
-      const current = JSON.parse(savedCurrent);
-      setCurrentSleep(current);
+      setCurrentSleep(savedCurrent);
       setIsSleeping(true);
     }
   }, []);
 
   // Save records to localStorage
   const saveRecords = useCallback((records: SleepRecord[]) => {
-    localStorage.setItem(SLEEP_RECORDS_KEY, JSON.stringify(records));
+    setStorageJson(SLEEP_RECORDS_KEY, records);
     setSleepRecords(records);
   }, []);
 
@@ -54,7 +50,7 @@ export function useSleepTracker() {
     
     setCurrentSleep(record);
     setIsSleeping(true);
-    localStorage.setItem(CURRENT_SLEEP_KEY, JSON.stringify(record));
+    setStorageJson(CURRENT_SLEEP_KEY, record);
   }, []);
 
   // End sleep tracking
@@ -131,10 +127,57 @@ export function useSleepTracker() {
     ).slice(0, limit);
   }, [sleepRecords]);
 
-  // Format duration
+  // Get record by date (one record per date)
+  const getRecordByDate = useCallback((date: string) => {
+    return sleepRecords.find(r => r.date === date) ?? null;
+  }, [sleepRecords]);
+
+  // Get records within last N days
+  const getRecordsInRange = useCallback((days: number) => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+    return sleepRecords
+      .filter(r => r.date >= cutoffStr)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [sleepRecords]);
+
+  // Add manual record (for past nights)
+  const addManualRecord = useCallback((input: Omit<SleepRecord, 'id'>) => {
+    const existing = sleepRecords.find(r => r.date === input.date);
+    if (existing) return null;
+    const record: SleepRecord = {
+      ...input,
+      id: `sleep-${Date.now()}`,
+    };
+    saveRecords([...sleepRecords, record]);
+    return record;
+  }, [sleepRecords, saveRecords]);
+
+  // Update existing record
+  const updateRecord = useCallback((id: string, updates: Partial<Omit<SleepRecord, 'id' | 'date'>>) => {
+    const idx = sleepRecords.findIndex(r => r.id === id);
+    if (idx < 0) return null;
+    const updated: SleepRecord = { ...sleepRecords[idx], ...updates };
+    const next = [...sleepRecords];
+    next[idx] = updated;
+    saveRecords(next);
+    return updated;
+  }, [sleepRecords, saveRecords]);
+
+  // Delete record
+  const deleteRecord = useCallback((id: string) => {
+    const next = sleepRecords.filter(r => r.id !== id);
+    if (next.length === sleepRecords.length) return false;
+    saveRecords(next);
+    return true;
+  }, [sleepRecords, saveRecords]);
+
+  // Format duration (handles negative/edge cases)
   const formatDuration = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
+    const safe = Math.max(0, Math.floor(minutes));
+    const hours = Math.floor(safe / 60);
+    const mins = safe % 60;
     return `${hours}h ${mins}m`;
   };
 
@@ -147,6 +190,11 @@ export function useSleepTracker() {
     cancelSleep,
     getStats,
     getRecentRecords,
+    getRecordByDate,
+    getRecordsInRange,
+    addManualRecord,
+    updateRecord,
+    deleteRecord,
     formatDuration,
   };
 }

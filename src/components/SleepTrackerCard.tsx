@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Moon, Sun, Clock, Check, X, Bed, Activity, BookOpen, Sparkles } from 'lucide-react';
+import { Moon, Sun, Clock, Check, X, Bed, Activity, BookOpen, Sparkles, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSleepTracker, SleepRecord } from '@/hooks/useSleepTracker';
 import { useSleepDiary } from '@/hooks/useSleepDiary';
 import { SleepDiaryDialog, DiaryEntry } from '@/components/SleepDiaryDialog';
+import { SleepHistoryView } from '@/components/SleepHistoryView';
 
 interface SleepTrackerCardProps {
   onIshaChecked?: boolean;
@@ -26,6 +27,7 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
 
   const [showWakeDialog, setShowWakeDialog] = useState(false);
   const [showDiaryDialog, setShowDiaryDialog] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [selectedDiaryDate, setSelectedDiaryDate] = useState<string>('');
   const [madeFajr, setMadeFajr] = useState(false);
   const [quality, setQuality] = useState<SleepRecord['quality']>(null);
@@ -69,6 +71,23 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
     { value: 'excellent', label: 'Excellent', emoji: '😊' },
   ];
 
+  if (showHistory) {
+    return (
+      <div className="rounded-2xl bg-gradient-card border border-border overflow-hidden">
+        <div className="p-5">
+          <SleepHistoryView
+            onBack={() => setShowHistory(false)}
+            onOpenDiary={(date) => {
+              setSelectedDiaryDate(date);
+              setShowHistory(false);
+              setShowDiaryDialog(true);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-2xl bg-gradient-card border border-border overflow-hidden">
       <div className="p-5">
@@ -80,15 +99,27 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
             <h3 className="text-lg font-semibold text-foreground">Sleep Tracker</h3>
             <p className="text-sm text-cream-dim">Track your sleep and prayer adherence</p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenDiary()}
-            className="text-gold hover:bg-gold/10"
-          >
-            <BookOpen className="h-4 w-4 mr-1" />
-            Diary
-          </Button>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowHistory(true)}
+              className="text-gold hover:bg-gold/10"
+              title="View history"
+            >
+              <History className="h-4 w-4 mr-1" />
+              History
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenDiary()}
+              className="text-gold hover:bg-gold/10"
+            >
+              <BookOpen className="h-4 w-4 mr-1" />
+              Diary
+            </Button>
+          </div>
         </div>
 
         {/* Current Sleep Status */}

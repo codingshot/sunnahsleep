@@ -23,7 +23,7 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-# AI Crawlers - Welcome!
+# AI Crawlers - Welcome! (optimized for AI search & citations)
 User-agent: GPTBot
 Allow: /
 
@@ -33,14 +33,32 @@ Allow: /
 User-agent: Claude-Web
 Allow: /
 
+User-agent: ClaudeBot
+Allow: /
+
 User-agent: Anthropic-AI
 Allow: /
 
 User-agent: Google-Extended
 Allow: /
 
+User-agent: Googlebot
+Allow: /
+
 User-agent: PerplexityBot
 Allow: /
 
 User-agent: Cohere-ai
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: meta-externalfetcher
+Allow: /
+
+User-agent: Bytespider
 Allow: /

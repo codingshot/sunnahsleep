@@ -15,7 +15,9 @@
 
 ---
 
-## 🔄 User Flow
+## 🔄 User Flows
+
+### Primary: Complete Sunnah Bedtime Routine
 
 <presentation-mermaid>
 graph TD
@@ -44,6 +46,68 @@ graph TD
     style P fill:#1a1a2e,stroke:#d4af37,color:#fff
     style R fill:#1a1a2e,stroke:#d4af37,color:#fff
 </presentation-mermaid>
+
+### Flow 1: First-Time User
+1. Opens app → Location auto-detected, prayer times load
+2. Sees checklist with phases (Evening → Bedtime → Morning)
+3. Taps **Recitations** → Expands Ayat al-Kursi, learns with transliteration
+4. Taps **Wudu Guide** (header) → Step-by-step wudu instructions
+5. Returns to checklist → Completes items, builds streak
+
+### Flow 2: Tahajjud-Focused User
+1. Opens app → Goes to **Sleep** tab
+2. Enables Tahajjud alarm → App calculates last third of night
+3. Sets "30 min before Fajr" wake alarm
+4. Completes bedtime checklist, sleeps early
+5. Wakes at alarm → Prayers Tahajjud → Fajr
+
+### Flow 3: Sleep Tracker User
+1. Prays Isha → Taps "Start Sleep" in Sleep tab
+2. Records "Made Isha" ✓
+3. Wakes → Taps "I'm Awake" → Records Fajr + sleep quality
+4. Views weekly stats (Isha rate, Fajr rate, avg duration)
+5. Adds diary entry for dreams/notes
+
+### Flow 4: Quick Reference User
+1. Opens app for quick lookup (no account)
+2. **Recitations** tab → Ayat al-Kursi, Three Quls with audio
+3. **Wudu** page → Brush up on steps before prayer
+4. **Prophetic Sleep** (Guides) → Read hadith about sleeping position
+5. Closes app — no data left on server
+
+---
+
+## 👤 Customer Personas
+
+### Fatima — The Revert Building Habits
+- **Background:** New Muslim, wants to follow Sunnah but unsure where to start
+- **Goals:** Learn the bedtime routine, understand the *why* behind each step
+- **Pain points:** Overwhelmed by long articles; needs simple, trustworthy sources
+- **SunnahSleep fit:** Checklist with Hadith tooltips, Wudu guide, transliteration for recitations
+
+### Ahmed — The Busy Professional
+- **Background:** Works late, struggles to pray Isha on time and wake for Fajr
+- **Goals:** Build consistency, track progress, get reliable alarms
+- **Pain points:** Forgets steps, no accountability, generic apps lack Islamic context
+- **SunnahSleep fit:** Prayer alarms, sleep tracker with Isha/Fajr adherence, streak counter
+
+### Aisha — The Tahajjud Seeker
+- **Background:** Wants to wake in the last third of the night for night prayer
+- **Goals:** Calculate Tahajjud time accurately, get a gentle wake-up
+- **Pain points:** Manual calculation is tedious; needs location-based times
+- **SunnahSleep fit:** Tahajjud alarm (last third), Fajr-before alarms, Qailulah reminder
+
+### Yusuf — The Privacy-Conscious User
+- **Background:** Cautious about apps collecting data, prefers local-only tools
+- **Goals:** Islamic content without accounts, tracking, or ads
+- **Pain points:** Many apps require login or share data
+- **SunnahSleep fit:** 100% local storage, no account, no tracking, PWA offline
+
+### Maryam — The Parent & Educator
+- **Background:** Teaches children Islamic practices, wants accurate references
+- **Goals:** Show kids the Prophetic routine, verify hadith sources
+- **Pain points:** Unverified content online; needs Sunnah.com links
+- **SunnahSleep fit:** Every hadith linked to Sunnah.com, Quran verses with translations
 
 ---
 
@@ -161,6 +225,14 @@ sunnahsleep/
 │   ├── index.css             # Global styles & design tokens
 │   └── main.tsx              # Entry point
 │
+├── docs/
+│   └── EDGE-CASES.md         # Documented edge cases & handling
+├── marketing/                # Social media content & workflows
+│   ├── README.md             # Content types, platforms, workflows
+│   ├── WORKFLOW-FACT-CHECK.md
+│   ├── WORKFLOW-CROSS-PLATFORM.md
+│   ├── content-types/        # islamic-education, product-features, etc.
+│   └── social/               # Platform-ready copy (instagram, twitter, etc.)
 ├── index.html                # HTML template with SEO
 ├── tailwind.config.ts        # Tailwind configuration
 ├── vite.config.ts            # Vite + PWA configuration
@@ -249,6 +321,17 @@ sunnahsleep/
 - [ ] Multi-language i18n setup
 - [ ] Performance optimization
 - [ ] End-to-end testing with Playwright
+
+---
+
+## 📣 Marketing
+
+The `/marketing` folder contains:
+
+- **Content types:** Islamic education, product features, thought leadership, statistics
+- **Fact-check workflow:** Verify hadith/Quran before posting ([WORKFLOW-FACT-CHECK.md](marketing/WORKFLOW-FACT-CHECK.md))
+- **Cross-platform workflow:** One content → reformatted for Instagram, Twitter, Facebook, LinkedIn, TikTok ([WORKFLOW-CROSS-PLATFORM.md](marketing/WORKFLOW-CROSS-PLATFORM.md))
+- **Platform-ready copy:** Example posts in `marketing/social/`
 
 ---
 

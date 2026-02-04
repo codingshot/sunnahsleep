@@ -1,0 +1,44 @@
+# Auto-label issues based on template for easier triage and AI bug support
+
+name: Issue Triage
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  label:
+    name: Label by template
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels?.map(l => l.name) || [];
+            const body = (issue.body || '').toLowerCase();
+            const title = (issue.title || '').toLowerCase();
+
+            let toAdd = [];
+
+            if (labels.some(l => ['bug', 'enhancement', 'documentation', 'islamic-content', 'api', 'security', 'performance'].includes(l))) {
+              return; // already labeled by template
+            }
+
+            if (title.includes('[bug]') || body.includes('steps to reproduce') || body.includes('expected behavior')) toAdd.push('bug');
+            else if (title.includes('[feature]') || title.includes('[enhancement]')) toAdd.push('enhancement');
+            else if (title.includes('[islamic]') || body.includes('hadith') || body.includes('sunnah.com')) toAdd.push('islamic-content');
+            else if (title.includes('[api]') || body.includes('prayer times') || body.includes('aladhan') || body.includes('geolocation')) toAdd.push('api');
+            else if (title.includes('[docs]') || title.includes('[documentation]')) toAdd.push('documentation');
+            else if (title.includes('[security') || title.includes('xss') || title.includes('localstorage')) toAdd.push('security');
+
+            if (toAdd.length) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: toAdd
+              });
+            }

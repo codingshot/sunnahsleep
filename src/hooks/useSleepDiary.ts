@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DiaryEntry } from '@/components/SleepDiaryDialog';
+import { getStorageJson, setStorageJson } from '@/lib/storage';
 
 const DIARY_KEY = 'sunnahSleepDiary';
 
@@ -8,10 +9,8 @@ export function useSleepDiary() {
 
   // Load entries on mount
   useEffect(() => {
-    const saved = localStorage.getItem(DIARY_KEY);
-    if (saved) {
-      setEntries(JSON.parse(saved));
-    }
+    const saved = getStorageJson<DiaryEntry[]>(DIARY_KEY);
+    if (Array.isArray(saved)) setEntries(saved);
   }, []);
 
   // Save entry
@@ -36,7 +35,7 @@ export function useSleepDiary() {
         updated = [...prev, newEntry];
       }
       
-      localStorage.setItem(DIARY_KEY, JSON.stringify(updated));
+      setStorageJson(DIARY_KEY, updated);
       return updated;
     });
 
@@ -59,7 +58,7 @@ export function useSleepDiary() {
   const deleteEntry = useCallback((id: string) => {
     setEntries(prev => {
       const updated = prev.filter(e => e.id !== id);
-      localStorage.setItem(DIARY_KEY, JSON.stringify(updated));
+      setStorageJson(DIARY_KEY, updated);
       return updated;
     });
   }, []);

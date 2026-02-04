@@ -52,7 +52,9 @@
 
     <!-- AI Search Engine Optimization -->
     <meta name="ai-content-type" content="web application" />
-    <meta name="ai-purpose" content="Islamic sleep companion app for following Prophetic Sunnah before bed" />
+    <meta name="ai-purpose" content="Islamic sleep companion app for following Prophetic Sunnah before bed. Features: Sunnah bedtime checklist, Ayat al-Kursi, Tasbih 33-33-34, Tahajjud alarm, prayer times, sleep tracker. Free, private, no account." />
+    <meta name="ai-topics" content="Islamic sleep, Sunnah, bedtime routine, Tahajjud, Ayat al-Kursi, Muslim prayer, wudu, Quran recitation" />
+    <meta name="ai-format" content="Progressive Web App, works offline" />
     
     <!-- Structured Data - WebApplication -->
     <script type="application/ld+json">
@@ -99,14 +101,33 @@
         "100% offline capable",
         "Privacy-focused (local storage only)"
       ],
-      "screenshot": "https://sunnahsleep.app/og-image.png",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5",
-        "ratingCount": "1",
-        "bestRating": "5",
-        "worstRating": "1"
-      }
+      "screenshot": "https://sunnahsleep.app/og-image.png"
+    }
+    </script>
+
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Ummah.Build",
+      "url": "https://ummah.build",
+      "logo": "https://sunnahsleep.app/icon-512.png",
+      "sameAs": []
+    }
+    </script>
+
+    <!-- Structured Data - BreadcrumbList (Home) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "SunnahSleep",
+        "item": "https://sunnahsleep.app/"
+      }]
     }
     </script>
 
