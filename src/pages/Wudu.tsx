@@ -19,6 +19,7 @@ interface WuduStep {
     audioUrl?: string;
   };
   hadithSource?: string;
+  hadithLink?: string;
   keyboardShortcut: string;
 }
 
@@ -132,7 +133,8 @@ const wuduSteps: WuduStep[] = [
       transliteration: 'Ash-hadu an la ilaha ill-Allah wahdahu la sharika lah, wa ash-hadu anna Muhammadan abduhu wa rasuluh. Allahumma-j\'alni min at-tawwabin, wa-j\'alni min al-mutatahhirin.',
       translation: 'I bear witness that there is no god but Allah alone, with no partner, and I bear witness that Muhammad is His slave and Messenger. O Allah, make me among those who repent and make me among those who purify themselves.',
     },
-    hadithSource: 'Muslim 234, Tirmidhi 55',
+    hadithSource: 'Abu Dawud 169 (Sahih)',
+    hadithLink: 'https://sunnah.com/abudawud:169',
     keyboardShortcut: '-',
   },
 ];
@@ -565,7 +567,19 @@ export default function Wudu() {
 
                   {step.hadithSource && (
                     <p className="text-xs text-muted-foreground">
-                      📖 Source: {step.hadithSource}
+                      📖 Source:{' '}
+                      {step.hadithLink ? (
+                        <a
+                          href={step.hadithLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gold hover:underline"
+                        >
+                          {step.hadithSource}
+                        </a>
+                      ) : (
+                        step.hadithSource
+                      )}
                     </p>
                   )}
 

@@ -454,6 +454,7 @@ const Index = () => {
                     verses={[{
                       ayah: 1,
                       arabic: qul.arabic,
+                      transliteration: qul.transliteration,
                       translation: qul.translation,
                       audioUrl: qul.audioUrl
                     }]}

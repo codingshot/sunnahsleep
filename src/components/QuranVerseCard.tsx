@@ -8,6 +8,7 @@ interface QuranVerse {
   ayah: number;
   arabic: string;
   translation: string;
+  transliteration?: string;
   audioUrl?: string;
 }
 
@@ -135,6 +136,14 @@ export function QuranVerseCard({
                   </button>
                 )}
               </div>
+              
+              {/* Transliteration */}
+              {verse.transliteration && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Transliteration</p>
+                  <p className="text-cream-dim italic leading-relaxed text-sm">{verse.transliteration}</p>
+                </div>
+              )}
               
               {/* Translation */}
               <p className="text-foreground leading-relaxed text-sm">

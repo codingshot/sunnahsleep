@@ -436,12 +436,14 @@ export const lastTwoAyahBaqarah = {
     {
       ayah: 285,
       arabic: 'آمَنَ الرَّسُولُ بِمَا أُنزِلَ إِلَيْهِ مِن رَّبِّهِ وَالْمُؤْمِنُونَ ۚ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِّن رُّسُلِهِ ۚ وَقَالُوا سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ',
+      transliteration: "Amanar-Rasulu bima unzila ilayhi min Rabbihi wal-mu'minun. Kullun amana billahi wa mala'ikatihi wa kutubihi wa Rusulihi. La nufarriqu bayna ahadim-min Rusulih. Wa qalu sami'na wa ata'na. Ghufranaka Rabbana wa ilaykal-masir.",
       translation: 'The Messenger has believed in what was revealed to him from his Lord, and so have the believers. All of them have believed in Allah and His angels and His books and His messengers, saying, "We make no distinction between any of His messengers." And they say, "We hear and we obey. Grant us Your forgiveness, our Lord, and to You is the final destination."',
       audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/292.mp3'
     },
     {
       ayah: 286,
       arabic: 'لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ۚ لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ ۗ رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِن قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنتَ مَوْلَانَا فَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ',
+      transliteration: "La yukalliful-lahu nafsan illa wus'aha. Laha ma kasabat wa 'alayha maktasabat. Rabbana la tu'akhidhna in nasina aw akhta'na. Rabbana wa la tahmil 'alayna isran kama hamaltahu 'alalladhina min qablina. Rabbana wa la tuhammilna ma la taqata lana bih. Wa'fu 'anna waghfir lana warhamna. Anta Mawlana fansurna 'alal-qawmil-kafirin.",
       translation: 'Allah does not burden a soul beyond that it can bear. It will have the consequence of what it has gained, and it will bear the consequence of what it has earned. "Our Lord, do not impose blame upon us if we have forgotten or erred. Our Lord, and lay not upon us a burden like that which You laid upon those before us. Our Lord, and burden us not with that which we have no ability to bear. And pardon us; and forgive us; and have mercy upon us. You are our protector, so give us victory over the disbelieving people."',
       audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/293.mp3'
     }
@@ -456,6 +458,7 @@ export const threeQuls = [
     name: 'Al-Ikhlas',
     nameArabic: 'الإخلاص',
     arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ ﴿١﴾ اللَّهُ الصَّمَدُ ﴿٢﴾ لَمْ يَلِدْ وَلَمْ يُولَدْ ﴿٣﴾ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ ﴿٤﴾',
+    transliteration: "Qul Huwa Allahu Ahad. Allahus-Samad. Lam yalid wa lam yulad. Wa lam yakun lahu kufuwan ahad.",
     translation: 'Say, "He is Allah, the One. Allah, the Eternal Refuge. He neither begets nor is born. Nor is there to Him any equivalent."',
     audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6222.mp3'
   },
@@ -465,6 +468,7 @@ export const threeQuls = [
     name: 'Al-Falaq',
     nameArabic: 'الفلق',
     arabic: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ﴿١﴾ مِن شَرِّ مَا خَلَقَ ﴿٢﴾ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ﴿٣﴾ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ﴿٤﴾ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ ﴿٥﴾',
+    transliteration: "Qul a'udhu bi Rabbi al-Falaq. Min sharri ma khalaq. Wa min sharri ghasiqin idha waqab. Wa min sharrin-naffathati fil-'uqad. Wa min sharri hasidin idha hasad.",
     translation: 'Say, "I seek refuge in the Lord of daybreak. From the evil of that which He created. And from the evil of darkness when it settles. And from the evil of the blowers in knots. And from the evil of an envier when he envies."',
     audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6227.mp3'
   },
@@ -474,6 +478,7 @@ export const threeQuls = [
     name: 'An-Nas',
     nameArabic: 'الناس',
     arabic: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ ﴿١﴾ مَلِكِ النَّاسِ ﴿٢﴾ إِلَٰهِ النَّاسِ ﴿٣﴾ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ﴿٤﴾ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ﴿٥﴾ مِنَ الْجِنَّةِ وَالنَّاسِ ﴿٦﴾',
+    transliteration: "Qul a'udhu bi Rabbi an-Nas. Maliki an-Nas. Ilahi an-Nas. Min sharril-waswasil-khannas. Alladhi yuwaswisu fi sudurin-nas. Minal-jinnati wan-nas.",
     translation: 'Say, "I seek refuge in the Lord of mankind. The King of mankind. The God of mankind. From the evil of the retreating whisperer. Who whispers in the breasts of mankind. From among the jinn and mankind."',
     audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6233.mp3'
   }
@@ -483,13 +488,13 @@ export const qailulahInfo = {
   title: 'Qailulah',
   titleArabic: 'القيلولة',
   description: 'The Sunnah midday rest taken before or after Dhuhr prayer',
-  detailedExplanation: 'Qailulah is a short rest or nap taken around midday, typically between Dhuhr and Asr prayers. The Prophet ﷺ encouraged this practice as it helps rejuvenate the body for night worship (Tahajjud). The ideal duration is 20-30 minutes.',
+  detailedExplanation: 'Qailulah is a short rest or nap taken around midday, typically between Dhuhr and Asr prayers. The Prophet ﷺ and his Companions practiced this, as it helps rejuvenate the body for night worship (Tahajjud). The ideal duration is 20-30 minutes.',
   hadithReference: {
     collection: 'bukhari',
-    hadithNumber: 6281,
-    narrator: 'Anas bin Malik',
-    arabicText: 'قِيلُوا فَإِنَّ الشَّيَاطِينَ لاَ تَقِيلُ',
-    englishText: 'Take a nap, for the devils do not take naps.'
+    hadithNumber: 6279,
+    narrator: 'Sahl bin Sa\'d',
+    arabicText: 'كُنَّا نَقِيلُ وَنَتَغَدَّى بَعْدَ الْجُمُعَةِ',
+    englishText: 'We used to have a midday nap and take our meals after the Jumu\'ah (prayer).'
   }
 };
 
