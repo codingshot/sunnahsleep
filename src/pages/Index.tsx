@@ -48,7 +48,7 @@ const Index = () => {
 
   const playAllSurahs = () => {
     setShowQuranPlayer(true);
-    setPlayerCommand({ type: 'play', trackIndex: 0 });
+    setPlayerCommand({ type: 'play', trackIndex: 0, looping: false });
   };
 
   // Sync tab changes to URL

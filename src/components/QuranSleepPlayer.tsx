@@ -67,6 +67,7 @@ export const SLEEP_SURAHS: SurahTrack[] = [
 export interface PlayerCommand {
   type: 'play' | 'queue';
   trackIndex: number;
+  looping?: boolean;
 }
 
 interface QuranSleepPlayerProps {
@@ -160,12 +161,18 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
     if (command.type === 'play') {
       setCurrentTrackIndex(command.trackIndex);
       setProgress(0);
+      if (command.looping !== undefined) {
+        setIsLooping(command.looping);
+      }
       loadAndPlay(command.trackIndex);
     } else if (command.type === 'queue') {
       setQueue(prev => [...prev, command.trackIndex]);
       // If nothing is playing, start playing
       if (!isPlaying && !audioRef.current) {
         setCurrentTrackIndex(command.trackIndex);
+        if (command.looping !== undefined) {
+          setIsLooping(command.looping);
+        }
         loadAndPlay(command.trackIndex);
         setQueue(prev => prev.slice(0, -1)); // remove from queue since we're playing it
       }
