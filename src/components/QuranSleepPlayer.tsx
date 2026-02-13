@@ -64,6 +64,13 @@ export const SLEEP_SURAHS: SurahTrack[] = [
   },
 ];
 
+type TransitionState = {
+  active: boolean;
+  fromTrack: SurahTrack | null;
+  toTrack: SurahTrack | null;
+  countdown: number;
+};
+
 export interface PlayerCommand {
   type: 'play' | 'queue';
   trackIndex: number;
@@ -87,8 +94,10 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
   const [volume, setVolume] = useState(80);
   const [showQueue, setShowQueue] = useState(false);
   const [queue, setQueue] = useState<number[]>([]); // indices into SLEEP_SURAHS
+  const [transition, setTransition] = useState<TransitionState>({ active: false, fromTrack: null, toTrack: null, countdown: 5 });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const transitionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentTrack = SLEEP_SURAHS[currentTrackIndex];
 
@@ -128,20 +137,41 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
 
     audio.onloadedmetadata = () => setDuration(audio.duration);
     audio.onended = () => {
-      // Check queue first
-      if (queue.length > 0) {
-        const nextInQueue = queue[0];
-        setQueue(prev => prev.slice(1));
-        setCurrentTrackIndex(nextInQueue);
-        loadAndPlay(nextInQueue);
-      } else if (isLooping) {
+      if (isLooping) {
         audio.currentTime = 0;
         audio.play();
-      } else {
-        const nextIndex = (index + 1) % SLEEP_SURAHS.length;
-        setCurrentTrackIndex(nextIndex);
-        loadAndPlay(nextIndex);
+        return;
       }
+      // Determine next track
+      let nextIdx: number;
+      if (queue.length > 0) {
+        nextIdx = queue[0];
+        setQueue(prev => prev.slice(1));
+      } else {
+        nextIdx = (index + 1) % SLEEP_SURAHS.length;
+      }
+      // Show transition UI
+      const fromTrack = SLEEP_SURAHS[index];
+      const toTrack = SLEEP_SURAHS[nextIdx];
+      setIsPlaying(false);
+      clearProgressInterval();
+      setTransition({ active: true, fromTrack, toTrack, countdown: 5 });
+      setCurrentTrackIndex(nextIdx);
+      setProgress(0);
+
+      // Clear any existing transition timer
+      if (transitionTimerRef.current) clearInterval(transitionTimerRef.current);
+      let count = 5;
+      transitionTimerRef.current = setInterval(() => {
+        count--;
+        setTransition(prev => ({ ...prev, countdown: count }));
+        if (count <= 0) {
+          if (transitionTimerRef.current) clearInterval(transitionTimerRef.current);
+          transitionTimerRef.current = null;
+          setTransition({ active: false, fromTrack: null, toTrack: null, countdown: 5 });
+          loadAndPlay(nextIdx);
+        }
+      }, 1000);
     };
     audio.onerror = () => {
       console.error('Error loading surah audio');
@@ -252,16 +282,52 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
     });
   }, []);
 
+  const skipTransition = useCallback(() => {
+    if (transitionTimerRef.current) {
+      clearInterval(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+    setTransition({ active: false, fromTrack: null, toTrack: null, countdown: 5 });
+    loadAndPlay(currentTrackIndex);
+  }, [currentTrackIndex, loadAndPlay]);
+
+  const pauseTransition = useCallback(() => {
+    if (transitionTimerRef.current) {
+      clearInterval(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+  }, []);
+
+  const resumeTransition = useCallback(() => {
+    if (!transition.active || transition.countdown <= 0) return;
+    let count = transition.countdown;
+    transitionTimerRef.current = setInterval(() => {
+      count--;
+      setTransition(prev => ({ ...prev, countdown: count }));
+      if (count <= 0) {
+        if (transitionTimerRef.current) clearInterval(transitionTimerRef.current);
+        transitionTimerRef.current = null;
+        setTransition({ active: false, fromTrack: null, toTrack: null, countdown: 5 });
+        loadAndPlay(currentTrackIndex);
+      }
+    }, 1000);
+  }, [transition.active, transition.countdown, currentTrackIndex, loadAndPlay]);
+
   const handleClose = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       unregisterAudio(audioRef.current);
       audioRef.current = null;
     }
+    if (transitionTimerRef.current) {
+      clearInterval(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
     clearProgressInterval();
     setIsPlaying(false);
     setProgress(0);
     setQueue([]);
+    setTransition({ active: false, fromTrack: null, toTrack: null, countdown: 5 });
     onClose();
   }, [clearProgressInterval, onClose]);
 
@@ -271,6 +337,10 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
         audioRef.current.pause();
         unregisterAudio(audioRef.current);
         audioRef.current = null;
+      }
+      if (transitionTimerRef.current) {
+        clearInterval(transitionTimerRef.current);
+        transitionTimerRef.current = null;
       }
       clearProgressInterval();
     };
@@ -421,6 +491,43 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
             </div>
           )}
 
+          {/* Transition overlay between surahs */}
+          {transition.active && (
+            <div className="px-4 py-4 border-b border-gold/10">
+              <div className="text-center space-y-2">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Up Next</p>
+                <p className="text-sm font-medium text-gold">{transition.toTrack?.name}</p>
+                <p className="font-arabic text-base text-gold/70">{transition.toTrack?.nameArabic}</p>
+                <p className="text-xs text-muted-foreground">{transition.toTrack?.description}</p>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={pauseTransition}
+                    className="text-xs px-3 py-1.5 rounded-full border border-gold/20 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Pause className="h-3 w-3 inline mr-1" />
+                    Pause
+                  </button>
+                  <span className="text-lg font-medium text-gold tabular-nums">{transition.countdown}s</span>
+                  <button
+                    onClick={skipTransition}
+                    className="text-xs px-3 py-1.5 rounded-full bg-gold/10 text-gold hover:bg-gold/20 transition-colors"
+                  >
+                    <Play className="h-3 w-3 inline mr-1" />
+                    Play Now
+                  </button>
+                </div>
+                {!transitionTimerRef.current && transition.countdown > 0 && (
+                  <button
+                    onClick={resumeTransition}
+                    className="text-xs text-gold/60 hover:text-gold transition-colors"
+                  >
+                    Resume countdown
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Progress bar */}
           <div className="px-4 pt-3">
             <Slider
@@ -442,10 +549,13 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex-1 min-w-0 text-left flex items-center gap-2"
             >
+              <span className="w-8 h-8 rounded-lg bg-gold/10 text-gold text-xs font-medium flex items-center justify-center flex-shrink-0">
+                {currentTrack.surahNumber}
+              </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">{currentTrack.name}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {currentTrack.nameArabic} • {currentTrack.description}
+                  {currentTrack.nameArabic} • Ch. {currentTrack.surahNumber}
                   {queue.length > 0 && ` • ${queue.length} in queue`}
                 </p>
               </div>
