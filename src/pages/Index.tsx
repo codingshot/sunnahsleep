@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { QuranSleepPlayer } from '@/components/QuranSleepPlayer';
 import { Header } from '@/components/Header';
 import { ProgressRing } from '@/components/ProgressRing';
 import { ChecklistCard } from '@/components/ChecklistCard';
@@ -19,7 +20,7 @@ import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { useAlarms } from '@/hooks/useAlarms';
 import { duas, lastTwoAyahBaqarah, threeQuls } from '@/data/checklistData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets, Plus, Clock, Moon } from 'lucide-react';
+import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets, Plus, Clock, Moon, Headphones } from 'lucide-react';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ const Index = () => {
   const tabFromUrl = searchParams.get('tab') as TabValue | null;
   const initialTab = tabFromUrl && VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'checklist';
   const [activeTab, setActiveTab] = useState<TabValue>(initialTab);
+  const [showQuranPlayer, setShowQuranPlayer] = useState(false);
 
   // Sync tab changes to URL
   const handleTabChange = (value: string) => {
@@ -322,6 +324,15 @@ const Index = () => {
                         Prophet's ﷺ Bedding
                       </Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowQuranPlayer(true)}
+                      className="text-xs border-gold/20 text-cream-dim hover:text-gold hover:border-gold/40 gap-1"
+                    >
+                      <Headphones className="h-3.5 w-3.5" />
+                      Play Quran for Sleep
+                    </Button>
                   </div>
                 </div>
               </section>
@@ -593,6 +604,7 @@ const Index = () => {
       </div>
 
       <CompletionCelebration isComplete={isFullyComplete} />
+      <QuranSleepPlayer isVisible={showQuranPlayer} onClose={() => setShowQuranPlayer(false)} />
     </div>
   );
 };

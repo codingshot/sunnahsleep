@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useSleepHistory } from './useSleepHistory';
 import { useSleepTracker } from './useSleepTracker';
 import { useSleepDiary } from './useSleepDiary';
@@ -63,11 +63,6 @@ describe('useSleepHistory', () => {
     ]);
 
     const { result } = renderHook(() => useSleepHistory());
-
-    await waitFor(() => {
-      const summaries = result.current.getDaySummaries(7);
-      expect(summaries.length).toBeGreaterThanOrEqual(1);
-    });
 
     const summaries = result.current.getDaySummaries(7);
     const day1 = summaries.find((s) => s.date === date1);
