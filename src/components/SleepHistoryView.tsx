@@ -163,7 +163,7 @@ export function SleepHistoryView({ onBack, onOpenDiary }: SleepHistoryViewProps)
                       <span>{qualityEmoji[day.sleepRecord.quality]}</span>
                     )}
                     {day.diaryEntry && (
-                      <BookOpen className="h-3.5 w-3.5 text-gold/70" title="Has diary" />
+                      <BookOpen className="h-3.5 w-3.5 text-gold/70" aria-label="Has diary" />
                     )}
                   </div>
                 </div>
