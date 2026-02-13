@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Repeat, X, Volume2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Repeat, X, Volume2, ChevronUp, ChevronDown, GripVertical, ListMusic, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Slider } from '@/components/ui/slider';
 import { registerAudio, unregisterAudio } from '@/lib/audioManager';
 
-interface SurahTrack {
+export interface SurahTrack {
   id: string;
   name: string;
   nameArabic: string;
@@ -13,7 +13,7 @@ interface SurahTrack {
   audioUrl: string;
 }
 
-const SLEEP_SURAHS: SurahTrack[] = [
+export const SLEEP_SURAHS: SurahTrack[] = [
   {
     id: 'mulk',
     name: 'Surah Al-Mulk',
@@ -64,12 +64,19 @@ const SLEEP_SURAHS: SurahTrack[] = [
   },
 ];
 
+export interface PlayerCommand {
+  type: 'play' | 'queue';
+  trackIndex: number;
+}
+
 interface QuranSleepPlayerProps {
   isVisible: boolean;
   onClose: () => void;
+  command?: PlayerCommand | null;
+  onCommandHandled?: () => void;
 }
 
-export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) {
+export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled }: QuranSleepPlayerProps) {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
@@ -77,6 +84,8 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
   const [duration, setDuration] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [volume, setVolume] = useState(80);
+  const [showQueue, setShowQueue] = useState(false);
+  const [queue, setQueue] = useState<number[]>([]); // indices into SLEEP_SURAHS
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -111,7 +120,6 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
     audio.volume = volume / 100;
     audioRef.current = audio;
 
-    // Register with global audio manager (stops other audio)
     registerAudio(audio, () => {
       setIsPlaying(false);
       clearProgressInterval();
@@ -119,7 +127,13 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
 
     audio.onloadedmetadata = () => setDuration(audio.duration);
     audio.onended = () => {
-      if (isLooping) {
+      // Check queue first
+      if (queue.length > 0) {
+        const nextInQueue = queue[0];
+        setQueue(prev => prev.slice(1));
+        setCurrentTrackIndex(nextInQueue);
+        loadAndPlay(nextInQueue);
+      } else if (isLooping) {
         audio.currentTime = 0;
         audio.play();
       } else {
@@ -137,7 +151,28 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
       setIsPlaying(true);
       startProgressTracking();
     }).catch(() => setIsPlaying(false));
-  }, [volume, isLooping, clearProgressInterval, startProgressTracking]);
+  }, [volume, isLooping, queue, clearProgressInterval, startProgressTracking]);
+
+  // Handle external commands
+  useEffect(() => {
+    if (!command || !isVisible) return;
+
+    if (command.type === 'play') {
+      setCurrentTrackIndex(command.trackIndex);
+      setProgress(0);
+      loadAndPlay(command.trackIndex);
+    } else if (command.type === 'queue') {
+      setQueue(prev => [...prev, command.trackIndex]);
+      // If nothing is playing, start playing
+      if (!isPlaying && !audioRef.current) {
+        setCurrentTrackIndex(command.trackIndex);
+        loadAndPlay(command.trackIndex);
+        setQueue(prev => prev.slice(0, -1)); // remove from queue since we're playing it
+      }
+    }
+
+    onCommandHandled?.();
+  }, [command, isVisible]);
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current) {
@@ -150,7 +185,6 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
       clearProgressInterval();
       setIsPlaying(false);
     } else {
-      // Re-register since we're resuming
       registerAudio(audioRef.current, () => {
         setIsPlaying(false);
         clearProgressInterval();
@@ -163,11 +197,19 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
   }, [isPlaying, currentTrackIndex, loadAndPlay, clearProgressInterval, startProgressTracking]);
 
   const nextTrack = useCallback(() => {
-    const nextIndex = (currentTrackIndex + 1) % SLEEP_SURAHS.length;
-    setCurrentTrackIndex(nextIndex);
-    setProgress(0);
-    if (isPlaying) loadAndPlay(nextIndex);
-  }, [currentTrackIndex, isPlaying, loadAndPlay]);
+    if (queue.length > 0) {
+      const nextInQueue = queue[0];
+      setQueue(prev => prev.slice(1));
+      setCurrentTrackIndex(nextInQueue);
+      setProgress(0);
+      if (isPlaying) loadAndPlay(nextInQueue);
+    } else {
+      const nextIndex = (currentTrackIndex + 1) % SLEEP_SURAHS.length;
+      setCurrentTrackIndex(nextIndex);
+      setProgress(0);
+      if (isPlaying) loadAndPlay(nextIndex);
+    }
+  }, [currentTrackIndex, isPlaying, queue, loadAndPlay]);
 
   const prevTrack = useCallback(() => {
     const prevIndex = (currentTrackIndex - 1 + SLEEP_SURAHS.length) % SLEEP_SURAHS.length;
@@ -190,6 +232,19 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
     }
   }, []);
 
+  const removeFromQueue = useCallback((queueIndex: number) => {
+    setQueue(prev => prev.filter((_, i) => i !== queueIndex));
+  }, []);
+
+  const moveInQueue = useCallback((from: number, to: number) => {
+    setQueue(prev => {
+      const newQueue = [...prev];
+      const [removed] = newQueue.splice(from, 1);
+      newQueue.splice(to, 0, removed);
+      return newQueue;
+    });
+  }, []);
+
   const handleClose = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -199,6 +254,7 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
     clearProgressInterval();
     setIsPlaying(false);
     setProgress(0);
+    setQueue([]);
     onClose();
   }, [clearProgressInterval, onClose]);
 
@@ -222,7 +278,6 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
 
   if (!isVisible) return null;
 
-  // Mini-player mode (sticky bottom)
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom-full duration-300">
       <div className="max-w-lg mx-auto">
@@ -230,42 +285,132 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
           "bg-gradient-to-t from-[hsl(var(--midnight))] to-[hsl(var(--midnight-light))] border-t border-gold/30 backdrop-blur-xl shadow-2xl transition-all duration-300",
           isExpanded ? "rounded-t-2xl" : ""
         )}>
-          {/* Expanded track list */}
+          {/* Expanded: playlist or queue view */}
           {isExpanded && (
-            <div className="px-4 pt-4 pb-2 max-h-60 overflow-y-auto space-y-1">
-              <h4 className="text-xs text-gold uppercase tracking-wider font-semibold mb-2">
-                Sleep Surahs Playlist
-              </h4>
-              {SLEEP_SURAHS.map((track, index) => (
+            <div className="px-4 pt-4 pb-2">
+              {/* Toggle between playlist and queue */}
+              <div className="flex gap-2 mb-3">
                 <button
-                  key={track.id}
-                  onClick={() => {
-                    setCurrentTrackIndex(index);
-                    setProgress(0);
-                    loadAndPlay(index);
-                  }}
+                  onClick={() => setShowQueue(false)}
                   className={cn(
-                    "w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors",
-                    index === currentTrackIndex
-                      ? "bg-gold/15 border border-gold/20"
-                      : "hover:bg-secondary/50"
+                    "text-xs px-3 py-1 rounded-full transition-colors",
+                    !showQueue ? "bg-gold/20 text-gold" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <span className="w-6 h-6 rounded-full bg-gold/10 text-gold text-xs flex items-center justify-center flex-shrink-0">
-                    {index === currentTrackIndex && isPlaying ? '♪' : index + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className={cn(
-                      "text-sm truncate",
-                      index === currentTrackIndex ? "text-gold font-medium" : "text-foreground"
-                    )}>
-                      {track.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">{track.description}</p>
-                  </div>
-                  <span className="font-arabic text-sm text-gold/60 flex-shrink-0">{track.nameArabic}</span>
+                  Playlist
                 </button>
-              ))}
+                <button
+                  onClick={() => setShowQueue(true)}
+                  className={cn(
+                    "text-xs px-3 py-1 rounded-full transition-colors flex items-center gap-1",
+                    showQueue ? "bg-gold/20 text-gold" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <ListMusic className="h-3 w-3" />
+                  Queue {queue.length > 0 && `(${queue.length})`}
+                </button>
+              </div>
+
+              {!showQueue ? (
+                <div className="max-h-60 overflow-y-auto space-y-1">
+                  {SLEEP_SURAHS.map((track, index) => (
+                    <button
+                      key={track.id}
+                      onClick={() => {
+                        setCurrentTrackIndex(index);
+                        setProgress(0);
+                        loadAndPlay(index);
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors",
+                        index === currentTrackIndex
+                          ? "bg-gold/15 border border-gold/20"
+                          : "hover:bg-secondary/50"
+                      )}
+                    >
+                      <span className="w-6 h-6 rounded-full bg-gold/10 text-gold text-xs flex items-center justify-center flex-shrink-0">
+                        {index === currentTrackIndex && isPlaying ? '♪' : index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className={cn(
+                          "text-sm truncate",
+                          index === currentTrackIndex ? "text-gold font-medium" : "text-foreground"
+                        )}>
+                          {track.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">{track.description}</p>
+                      </div>
+                      <span className="font-arabic text-sm text-gold/60 flex-shrink-0">{track.nameArabic}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="max-h-60 overflow-y-auto space-y-1">
+                  {/* Now playing */}
+                  <div className="p-2.5 rounded-lg bg-gold/10 border border-gold/20 mb-2">
+                    <p className="text-[10px] text-gold uppercase tracking-wider mb-1">Now Playing</p>
+                    <p className="text-sm text-foreground">{currentTrack.name}</p>
+                  </div>
+
+                  {queue.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-4">
+                      Queue is empty. Use the Quran tab to add surahs.
+                    </p>
+                  ) : (
+                    queue.map((trackIndex, queueIdx) => (
+                      <div
+                        key={`q-${queueIdx}`}
+                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 group"
+                      >
+                        <span className="text-xs text-muted-foreground w-4">{queueIdx + 1}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-foreground truncate">{SLEEP_SURAHS[trackIndex].name}</p>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {queueIdx > 0 && (
+                            <button
+                              onClick={() => moveInQueue(queueIdx, queueIdx - 1)}
+                              className="p-1 rounded text-muted-foreground hover:text-foreground"
+                              aria-label="Move up"
+                            >
+                              <ChevronUp className="h-3 w-3" />
+                            </button>
+                          )}
+                          {queueIdx < queue.length - 1 && (
+                            <button
+                              onClick={() => moveInQueue(queueIdx, queueIdx + 1)}
+                              className="p-1 rounded text-muted-foreground hover:text-foreground"
+                              aria-label="Move down"
+                            >
+                              <ChevronDown className="h-3 w-3" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => removeFromQueue(queueIdx)}
+                            className="p-1 rounded text-muted-foreground hover:text-destructive"
+                            aria-label="Remove from queue"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Volume control in expanded view */}
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gold/10">
+                <Volume2 className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                <Slider
+                  value={[volume]}
+                  max={100}
+                  step={1}
+                  onValueChange={handleVolumeChange}
+                  className="flex-1"
+                />
+                <span className="text-[10px] text-muted-foreground w-8 text-right">{volume}%</span>
+              </div>
             </div>
           )}
 
@@ -292,7 +437,10 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
             >
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">{currentTrack.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{currentTrack.nameArabic} • {currentTrack.description}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {currentTrack.nameArabic} • {currentTrack.description}
+                  {queue.length > 0 && ` • ${queue.length} in queue`}
+                </p>
               </div>
               {isExpanded ? (
                 <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
