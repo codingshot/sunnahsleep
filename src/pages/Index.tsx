@@ -20,12 +20,12 @@ import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { useAlarms } from '@/hooks/useAlarms';
 import { duas, lastTwoAyahBaqarah, threeQuls } from '@/data/checklistData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets, Plus, Clock, Moon, Headphones } from 'lucide-react';
+import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets, Plus, Clock, Moon, Headphones, Music } from 'lucide-react';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
-const VALID_TABS = ['checklist', 'recitations', 'tasbih', 'sleep', 'alarms'] as const;
+const VALID_TABS = ['checklist', 'recitations', 'tasbih', 'quran', 'sleep', 'alarms'] as const;
 type TabValue = typeof VALID_TABS[number];
 
 const Index = () => {
@@ -39,6 +39,10 @@ const Index = () => {
   const handleTabChange = (value: string) => {
     const newTab = value as TabValue;
     setActiveTab(newTab);
+    // Auto-enable mini player when visiting quran tab
+    if (newTab === 'quran') {
+      setShowQuranPlayer(true);
+    }
     if (newTab === 'checklist') {
       searchParams.delete('tab');
     } else {
@@ -177,7 +181,7 @@ const Index = () => {
         {/* Main Content */}
         <main className="px-6">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1 grid grid-cols-5" aria-label="App sections">
+            <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1 grid grid-cols-6" aria-label="App sections">
               <TabsTrigger
                 value="checklist"
                 className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
@@ -198,6 +202,13 @@ const Index = () => {
                 aria-label="Tasbih counter"
               >
                 <Circle className="h-4 w-4" />
+              </TabsTrigger>
+              <TabsTrigger
+                value="quran"
+                className="data-[state=active]:bg-gold data-[state=active]:text-midnight text-xs"
+                aria-label="Quran player"
+              >
+                <Music className="h-4 w-4" />
               </TabsTrigger>
               <TabsTrigger
                 value="sleep"
@@ -365,6 +376,24 @@ const Index = () => {
                     <ChecklistCard key={item.id} item={item} onToggle={toggleItem} />
                   ))}
                 </div>
+                {/* Play Surahs CTA after remembrance */}
+                <div className="mt-4 p-3 rounded-xl bg-gold/5 border border-gold/20">
+                  <p className="text-xs text-cream-dim mb-2">
+                    🎧 <span className="text-gold font-medium">Listen to Quran as you fall asleep</span>
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowQuranPlayer(true);
+                      handleTabChange('quran');
+                    }}
+                    className="w-full border-gold/30 text-gold hover:bg-gold/10 gap-2"
+                  >
+                    <Music className="h-4 w-4" />
+                    Play Surahs for Sleep
+                  </Button>
+                </div>
               </section>
 
               {/* Step 5: Wake Up Before Fajr */}
@@ -507,6 +536,48 @@ const Index = () => {
                 >
                   Bukhari and Muslim - View on Sunnah.com →
                 </a>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="quran" className="space-y-4">
+              {/* The full player experience - auto-opens the persistent player */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-[hsl(var(--midnight))] to-[hsl(var(--midnight-light))] border border-gold/20 text-center">
+                <p className="font-arabic text-2xl text-gold mb-2">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+                <h3 className="text-lg font-medium text-foreground mb-1">Quran Sleep Player</h3>
+                <p className="text-sm text-muted-foreground mb-4">Listen to soothing recitations of surahs recommended before sleep</p>
+                {!showQuranPlayer && (
+                  <Button
+                    onClick={() => setShowQuranPlayer(true)}
+                    className="bg-gold text-[hsl(var(--midnight))] hover:bg-gold/90 gap-2"
+                  >
+                    <Music className="h-4 w-4" />
+                    Open Player
+                  </Button>
+                )}
+                {showQuranPlayer && (
+                  <p className="text-xs text-gold">🎵 Player is active below — use the mini-player controls</p>
+                )}
+              </div>
+
+              {/* Surah info cards */}
+              <div className="space-y-2">
+                <h4 className="text-xs text-gold uppercase tracking-wider font-semibold">Recommended Surahs for Sleep</h4>
+                {[
+                  { name: 'Surah Al-Mulk', arabic: 'سورة الملك', desc: 'Protection from punishment of the grave', ref: 'Tirmidhi 2891' },
+                  { name: 'Surah As-Sajdah', arabic: 'سورة السجدة', desc: 'The Prophet ﷺ would not sleep until he recited it', ref: 'Tirmidhi 2892' },
+                  { name: "Surah Al-Waqi'ah", arabic: 'سورة الواقعة', desc: 'Protection from poverty', ref: 'Ibn Kathir' },
+                  { name: 'Surah Yaseen', arabic: 'سورة يس', desc: 'The heart of the Quran', ref: 'Tirmidhi 2887' },
+                  { name: 'Surah Ar-Rahman', arabic: 'سورة الرحمن', desc: 'The Most Merciful', ref: 'Ar-Rahman 55' },
+                  { name: 'Surah Al-Kahf', arabic: 'سورة الكهف', desc: 'Light between two Fridays', ref: 'Muslim 809' },
+                ].map((surah) => (
+                  <div key={surah.name} className="p-3 rounded-xl bg-secondary/30 border border-border flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground">{surah.name}</p>
+                      <p className="text-xs text-muted-foreground">{surah.desc}</p>
+                    </div>
+                    <span className="font-arabic text-sm text-gold/60 flex-shrink-0">{surah.arabic}</span>
+                  </div>
+                ))}
               </div>
             </TabsContent>
 

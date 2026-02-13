@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Repeat, X, Volume2, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Slider } from '@/components/ui/slider';
+import { registerAudio, unregisterAudio } from '@/lib/audioManager';
 
 interface SurahTrack {
   id: string;
@@ -101,6 +102,7 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
   const loadAndPlay = useCallback((index: number) => {
     if (audioRef.current) {
       audioRef.current.pause();
+      unregisterAudio(audioRef.current);
     }
     clearProgressInterval();
 
@@ -109,14 +111,18 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
     audio.volume = volume / 100;
     audioRef.current = audio;
 
+    // Register with global audio manager (stops other audio)
+    registerAudio(audio, () => {
+      setIsPlaying(false);
+      clearProgressInterval();
+    });
+
     audio.onloadedmetadata = () => setDuration(audio.duration);
     audio.onended = () => {
       if (isLooping) {
-        // Loop same surah
         audio.currentTime = 0;
         audio.play();
       } else {
-        // Next track
         const nextIndex = (index + 1) % SLEEP_SURAHS.length;
         setCurrentTrackIndex(nextIndex);
         loadAndPlay(nextIndex);
@@ -144,6 +150,11 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
       clearProgressInterval();
       setIsPlaying(false);
     } else {
+      // Re-register since we're resuming
+      registerAudio(audioRef.current, () => {
+        setIsPlaying(false);
+        clearProgressInterval();
+      });
       audioRef.current.play().then(() => {
         setIsPlaying(true);
         startProgressTracking();
@@ -182,6 +193,7 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
   const handleClose = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
+      unregisterAudio(audioRef.current);
       audioRef.current = null;
     }
     clearProgressInterval();
@@ -190,11 +202,11 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
     onClose();
   }, [clearProgressInterval, onClose]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+        unregisterAudio(audioRef.current);
         audioRef.current = null;
       }
       clearProgressInterval();
@@ -210,6 +222,7 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
 
   if (!isVisible) return null;
 
+  // Mini-player mode (sticky bottom)
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom-full duration-300">
       <div className="max-w-lg mx-auto">
@@ -273,7 +286,6 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
 
           {/* Player controls */}
           <div className="px-4 pb-4 flex items-center gap-3">
-            {/* Track info */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex-1 min-w-0 text-left flex items-center gap-2"
@@ -289,7 +301,6 @@ export function QuranSleepPlayer({ isVisible, onClose }: QuranSleepPlayerProps) 
               )}
             </button>
 
-            {/* Controls */}
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => setIsLooping(!isLooping)}
