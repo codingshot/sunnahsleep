@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { QuranSleepPlayer } from '@/components/QuranSleepPlayer';
+import { QuranSleepPlayer, SLEEP_SURAHS, type PlayerCommand } from '@/components/QuranSleepPlayer';
 import { Header } from '@/components/Header';
 import { ProgressRing } from '@/components/ProgressRing';
 import { ChecklistCard } from '@/components/ChecklistCard';
@@ -20,7 +20,7 @@ import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { useAlarms } from '@/hooks/useAlarms';
 import { duas, lastTwoAyahBaqarah, threeQuls } from '@/data/checklistData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets, Plus, Clock, Moon, Headphones, Music } from 'lucide-react';
+import { ListChecks, BookOpen, Circle, Bed, Bell, ExternalLink, Download, Droplets, Plus, Clock, Moon, Headphones, Music, Play } from 'lucide-react';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,22 @@ const Index = () => {
   const initialTab = tabFromUrl && VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'checklist';
   const [activeTab, setActiveTab] = useState<TabValue>(initialTab);
   const [showQuranPlayer, setShowQuranPlayer] = useState(false);
+  const [playerCommand, setPlayerCommand] = useState<PlayerCommand | null>(null);
+
+  const playSurah = (trackIndex: number) => {
+    setShowQuranPlayer(true);
+    setPlayerCommand({ type: 'play', trackIndex });
+  };
+
+  const queueSurah = (trackIndex: number) => {
+    setShowQuranPlayer(true);
+    setPlayerCommand({ type: 'queue', trackIndex });
+  };
+
+  const playAllSurahs = () => {
+    setShowQuranPlayer(true);
+    setPlayerCommand({ type: 'play', trackIndex: 0 });
+  };
 
   // Sync tab changes to URL
   const handleTabChange = (value: string) => {
@@ -338,7 +354,7 @@ const Index = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setShowQuranPlayer(true)}
+                      onClick={playAllSurahs}
                       className="text-xs border-gold/20 text-cream-dim hover:text-gold hover:border-gold/40 gap-1"
                     >
                       <Headphones className="h-3.5 w-3.5" />
@@ -384,14 +400,11 @@ const Index = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setShowQuranPlayer(true);
-                      handleTabChange('quran');
-                    }}
+                    onClick={playAllSurahs}
                     className="w-full border-gold/30 text-gold hover:bg-gold/10 gap-2"
                   >
-                    <Music className="h-4 w-4" />
-                    Play Surahs for Sleep
+                    <Play className="h-4 w-4" />
+                    Play Quran for Sleep
                   </Button>
                 </div>
               </section>
@@ -540,42 +553,54 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="quran" className="space-y-4">
-              {/* The full player experience - auto-opens the persistent player */}
+              {/* Player header */}
               <div className="p-5 rounded-2xl bg-gradient-to-br from-[hsl(var(--midnight))] to-[hsl(var(--midnight-light))] border border-gold/20 text-center">
                 <p className="font-arabic text-2xl text-gold mb-2">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
                 <h3 className="text-lg font-medium text-foreground mb-1">Quran Sleep Player</h3>
-                <p className="text-sm text-muted-foreground mb-4">Listen to soothing recitations of surahs recommended before sleep</p>
-                {!showQuranPlayer && (
-                  <Button
-                    onClick={() => setShowQuranPlayer(true)}
-                    className="bg-gold text-[hsl(var(--midnight))] hover:bg-gold/90 gap-2"
-                  >
-                    <Music className="h-4 w-4" />
-                    Open Player
-                  </Button>
-                )}
-                {showQuranPlayer && (
-                  <p className="text-xs text-gold">🎵 Player is active below — use the mini-player controls</p>
-                )}
+                <p className="text-sm text-muted-foreground mb-4">Listen to soothing recitations as you fall asleep</p>
+                <Button
+                  onClick={playAllSurahs}
+                  className="bg-gold text-[hsl(var(--midnight))] hover:bg-gold/90 gap-2"
+                >
+                  <Play className="h-4 w-4" />
+                  {showQuranPlayer ? 'Restart Playlist' : 'Play All Surahs'}
+                </Button>
               </div>
 
-              {/* Surah info cards */}
+              {/* How to use info */}
+              <div className="p-4 rounded-xl bg-secondary/30 border border-border space-y-3">
+                <h4 className="text-xs text-gold uppercase tracking-wider font-semibold">How It Works</h4>
+                <div className="space-y-2 text-xs text-cream-dim">
+                  <p>🔁 <span className="text-foreground font-medium">Loop mode:</span> Repeats the current surah continuously — perfect for falling asleep to one recitation.</p>
+                  <p>⏭️ <span className="text-foreground font-medium">Auto-play:</span> When loop is off, surahs play one after another through the playlist.</p>
+                  <p>📋 <span className="text-foreground font-medium">Queue:</span> Tap "Queue" on any surah to add it next. Reorder or remove from the mini-player.</p>
+                  <p>🔊 <span className="text-foreground font-medium">Volume:</span> Expand the mini-player to adjust volume. Set it low for a peaceful sleep.</p>
+                  <p>♾️ <span className="text-foreground font-medium">Duration:</span> Plays indefinitely until you stop it or your wake-up alarm goes off.</p>
+                </div>
+              </div>
+
+              {/* Interactive surah cards */}
               <div className="space-y-2">
                 <h4 className="text-xs text-gold uppercase tracking-wider font-semibold">Recommended Surahs for Sleep</h4>
-                {[
-                  { name: 'Surah Al-Mulk', arabic: 'سورة الملك', desc: 'Protection from punishment of the grave', ref: 'Tirmidhi 2891' },
-                  { name: 'Surah As-Sajdah', arabic: 'سورة السجدة', desc: 'The Prophet ﷺ would not sleep until he recited it', ref: 'Tirmidhi 2892' },
-                  { name: "Surah Al-Waqi'ah", arabic: 'سورة الواقعة', desc: 'Protection from poverty', ref: 'Ibn Kathir' },
-                  { name: 'Surah Yaseen', arabic: 'سورة يس', desc: 'The heart of the Quran', ref: 'Tirmidhi 2887' },
-                  { name: 'Surah Ar-Rahman', arabic: 'سورة الرحمن', desc: 'The Most Merciful', ref: 'Ar-Rahman 55' },
-                  { name: 'Surah Al-Kahf', arabic: 'سورة الكهف', desc: 'Light between two Fridays', ref: 'Muslim 809' },
-                ].map((surah) => (
-                  <div key={surah.name} className="p-3 rounded-xl bg-secondary/30 border border-border flex items-center gap-3">
+                {SLEEP_SURAHS.map((surah, index) => (
+                  <div key={surah.id} className="p-3 rounded-xl bg-secondary/30 border border-border flex items-center gap-3">
+                    <button
+                      onClick={() => playSurah(index)}
+                      className="w-8 h-8 rounded-full bg-gold/10 hover:bg-gold/20 text-gold flex items-center justify-center flex-shrink-0 transition-colors"
+                      aria-label={`Play ${surah.name}`}
+                    >
+                      <Play className="h-3.5 w-3.5 ml-0.5" />
+                    </button>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-foreground">{surah.name}</p>
-                      <p className="text-xs text-muted-foreground">{surah.desc}</p>
+                      <p className="text-xs text-muted-foreground">{surah.description}</p>
                     </div>
-                    <span className="font-arabic text-sm text-gold/60 flex-shrink-0">{surah.arabic}</span>
+                    <button
+                      onClick={() => queueSurah(index)}
+                      className="text-[10px] px-2 py-1 rounded-full border border-gold/20 text-gold/70 hover:text-gold hover:border-gold/40 transition-colors flex-shrink-0"
+                    >
+                      + Queue
+                    </button>
                   </div>
                 ))}
               </div>
@@ -675,7 +700,12 @@ const Index = () => {
       </div>
 
       <CompletionCelebration isComplete={isFullyComplete} />
-      <QuranSleepPlayer isVisible={showQuranPlayer} onClose={() => setShowQuranPlayer(false)} />
+      <QuranSleepPlayer
+        isVisible={showQuranPlayer}
+        onClose={() => setShowQuranPlayer(false)}
+        command={playerCommand}
+        onCommandHandled={() => setPlayerCommand(null)}
+      />
     </div>
   );
 };
