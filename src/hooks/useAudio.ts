@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { registerAudio, unregisterAudio } from '@/lib/audioManager';
 
 export function useAudio() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -11,12 +12,14 @@ export function useAudio() {
       audioRef.current?.pause();
       setIsPlaying(false);
       setCurrentAudioId(null);
+      if (audioRef.current) unregisterAudio(audioRef.current);
       return;
     }
 
-    // Stop any currently playing audio
+    // Stop any currently playing audio (including from other components)
     if (audioRef.current) {
       audioRef.current.pause();
+      unregisterAudio(audioRef.current);
     }
 
     // Create new audio element
@@ -31,6 +34,12 @@ export function useAudio() {
       console.error('Error playing audio');
     };
 
+    // Register with global manager (stops other audio)
+    registerAudio(audioRef.current, () => {
+      setIsPlaying(false);
+      setCurrentAudioId(null);
+    });
+
     audioRef.current.play().then(() => {
       setIsPlaying(true);
       setCurrentAudioId(id);
@@ -44,6 +53,7 @@ export function useAudio() {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      unregisterAudio(audioRef.current);
     }
     setIsPlaying(false);
     setCurrentAudioId(null);
