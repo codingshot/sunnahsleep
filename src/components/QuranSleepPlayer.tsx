@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Repeat, X, Volume2, ChevronUp, ChevronDown, GripVertical, ListMusic, Trash2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Repeat, X, Volume2, VolumeX, ChevronUp, ChevronDown, ListMusic, Trash2, Timer, Gauge } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Slider } from '@/components/ui/slider';
 import { registerAudio, unregisterAudio } from '@/lib/audioManager';
@@ -20,7 +20,7 @@ export const SLEEP_SURAHS: SurahTrack[] = [
     nameArabic: 'سورة الملك',
     surahNumber: 67,
     description: 'Protection from punishment of the grave',
-    audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/5538.mp3',
+    audioUrl: 'https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/67.mp3',
   },
   {
     id: 'sajdah',
@@ -28,7 +28,7 @@ export const SLEEP_SURAHS: SurahTrack[] = [
     nameArabic: 'سورة السجدة',
     surahNumber: 32,
     description: 'The Prophet ﷺ would not sleep until he recited it',
-    audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/3385.mp3',
+    audioUrl: 'https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/32.mp3',
   },
   {
     id: 'waqiah',
@@ -36,7 +36,7 @@ export const SLEEP_SURAHS: SurahTrack[] = [
     nameArabic: 'سورة الواقعة',
     surahNumber: 56,
     description: 'Protection from poverty',
-    audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/5010.mp3',
+    audioUrl: 'https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/56.mp3',
   },
   {
     id: 'yaseen',
@@ -44,7 +44,7 @@ export const SLEEP_SURAHS: SurahTrack[] = [
     nameArabic: 'سورة يس',
     surahNumber: 36,
     description: 'The heart of the Quran',
-    audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/3705.mp3',
+    audioUrl: 'https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/36.mp3',
   },
   {
     id: 'rahman',
@@ -52,7 +52,7 @@ export const SLEEP_SURAHS: SurahTrack[] = [
     nameArabic: 'سورة الرحمن',
     surahNumber: 55,
     description: 'The Most Merciful',
-    audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/4932.mp3',
+    audioUrl: 'https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/55.mp3',
   },
   {
     id: 'kahf',
@@ -60,9 +60,19 @@ export const SLEEP_SURAHS: SurahTrack[] = [
     nameArabic: 'سورة الكهف',
     surahNumber: 18,
     description: 'Light between two Fridays',
-    audioUrl: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/2087.mp3',
+    audioUrl: 'https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/18.mp3',
   },
 ];
+
+const SLEEP_TIMER_OPTIONS = [
+  { label: 'Off', value: 0 },
+  { label: '15m', value: 15 },
+  { label: '30m', value: 30 },
+  { label: '60m', value: 60 },
+  { label: '90m', value: 90 },
+];
+
+const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5];
 
 type TransitionState = {
   active: boolean;
@@ -93,13 +103,51 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
   const [isExpanded, setIsExpanded] = useState(false);
   const [volume, setVolume] = useState(80);
   const [showQueue, setShowQueue] = useState(false);
-  const [queue, setQueue] = useState<number[]>([]); // indices into SLEEP_SURAHS
+  const [queue, setQueue] = useState<number[]>([]);
   const [transition, setTransition] = useState<TransitionState>({ active: false, fromTrack: null, toTrack: null, countdown: 5 });
+  const [sleepTimer, setSleepTimer] = useState(0); // minutes, 0 = off
+  const [sleepTimerRemaining, setSleepTimerRemaining] = useState(0); // seconds remaining
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const transitionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const sleepTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentTrack = SLEEP_SURAHS[currentTrackIndex];
+
+  // Sleep timer logic
+  useEffect(() => {
+    if (sleepTimerRef.current) {
+      clearInterval(sleepTimerRef.current);
+      sleepTimerRef.current = null;
+    }
+    if (sleepTimer > 0 && isPlaying) {
+      setSleepTimerRemaining(sleepTimer * 60);
+      sleepTimerRef.current = setInterval(() => {
+        setSleepTimerRemaining(prev => {
+          if (prev <= 1) {
+            // Time's up - stop playback
+            if (audioRef.current) {
+              audioRef.current.pause();
+            }
+            setIsPlaying(false);
+            setSleepTimer(0);
+            if (sleepTimerRef.current) clearInterval(sleepTimerRef.current);
+            sleepTimerRef.current = null;
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (sleepTimerRef.current) {
+        clearInterval(sleepTimerRef.current);
+        sleepTimerRef.current = null;
+      }
+    };
+  }, [sleepTimer, isPlaying]);
 
   const clearProgressInterval = useCallback(() => {
     if (progressIntervalRef.current) {
@@ -124,10 +172,12 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
       unregisterAudio(audioRef.current);
     }
     clearProgressInterval();
+    setIsLoading(true);
 
     const track = SLEEP_SURAHS[index];
     const audio = new Audio(track.audioUrl);
     audio.volume = volume / 100;
+    audio.playbackRate = playbackSpeed;
     audioRef.current = audio;
 
     registerAudio(audio, () => {
@@ -135,14 +185,16 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
       clearProgressInterval();
     });
 
-    audio.onloadedmetadata = () => setDuration(audio.duration);
+    audio.onloadedmetadata = () => {
+      setDuration(audio.duration);
+      setIsLoading(false);
+    };
     audio.onended = () => {
       if (isLooping) {
         audio.currentTime = 0;
         audio.play();
         return;
       }
-      // Determine next track
       let nextIdx: number;
       if (queue.length > 0) {
         nextIdx = queue[0];
@@ -150,7 +202,6 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
       } else {
         nextIdx = (index + 1) % SLEEP_SURAHS.length;
       }
-      // Show transition UI
       const fromTrack = SLEEP_SURAHS[index];
       const toTrack = SLEEP_SURAHS[nextIdx];
       setIsPlaying(false);
@@ -159,7 +210,6 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
       setCurrentTrackIndex(nextIdx);
       setProgress(0);
 
-      // Clear any existing transition timer
       if (transitionTimerRef.current) clearInterval(transitionTimerRef.current);
       let count = 5;
       transitionTimerRef.current = setInterval(() => {
@@ -176,47 +226,50 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
     audio.onerror = () => {
       console.error('Error loading surah audio');
       setIsPlaying(false);
+      setIsLoading(false);
     };
 
     audio.play().then(() => {
       setIsPlaying(true);
       startProgressTracking();
-    }).catch(() => setIsPlaying(false));
-  }, [volume, isLooping, queue, clearProgressInterval, startProgressTracking]);
+    }).catch(() => {
+      setIsPlaying(false);
+      setIsLoading(false);
+    });
+  }, [volume, isLooping, queue, playbackSpeed, clearProgressInterval, startProgressTracking]);
 
   // Handle external commands
   useEffect(() => {
     if (!command || !isVisible) return;
-
     if (command.type === 'play') {
       setCurrentTrackIndex(command.trackIndex);
       setProgress(0);
-      if (command.looping !== undefined) {
-        setIsLooping(command.looping);
-      }
+      if (command.looping !== undefined) setIsLooping(command.looping);
       loadAndPlay(command.trackIndex);
     } else if (command.type === 'queue') {
       setQueue(prev => [...prev, command.trackIndex]);
-      // If nothing is playing, start playing
       if (!isPlaying && !audioRef.current) {
         setCurrentTrackIndex(command.trackIndex);
-        if (command.looping !== undefined) {
-          setIsLooping(command.looping);
-        }
+        if (command.looping !== undefined) setIsLooping(command.looping);
         loadAndPlay(command.trackIndex);
-        setQueue(prev => prev.slice(0, -1)); // remove from queue since we're playing it
+        setQueue(prev => prev.slice(0, -1));
       }
     }
-
     onCommandHandled?.();
   }, [command, isVisible]);
+
+  // Sync playback speed to audio element
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackSpeed;
+    }
+  }, [playbackSpeed]);
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current) {
       loadAndPlay(currentTrackIndex);
       return;
     }
-
     if (isPlaying) {
       audioRef.current.pause();
       clearProgressInterval();
@@ -264,9 +317,7 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
 
   const handleVolumeChange = useCallback((value: number[]) => {
     setVolume(value[0]);
-    if (audioRef.current) {
-      audioRef.current.volume = value[0] / 100;
-    }
+    if (audioRef.current) audioRef.current.volume = value[0] / 100;
   }, []);
 
   const removeFromQueue = useCallback((queueIndex: number) => {
@@ -323,10 +374,16 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
       clearInterval(transitionTimerRef.current);
       transitionTimerRef.current = null;
     }
+    if (sleepTimerRef.current) {
+      clearInterval(sleepTimerRef.current);
+      sleepTimerRef.current = null;
+    }
     clearProgressInterval();
     setIsPlaying(false);
     setProgress(0);
     setQueue([]);
+    setSleepTimer(0);
+    setSleepTimerRemaining(0);
     setTransition({ active: false, fromTrack: null, toTrack: null, countdown: 5 });
     onClose();
   }, [clearProgressInterval, onClose]);
@@ -342,14 +399,26 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
         clearInterval(transitionTimerRef.current);
         transitionTimerRef.current = null;
       }
+      if (sleepTimerRef.current) {
+        clearInterval(sleepTimerRef.current);
+        sleepTimerRef.current = null;
+      }
       clearProgressInterval();
     };
   }, [clearProgressInterval]);
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return '0:00';
-    const m = Math.floor(seconds / 60);
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const formatTimerRemaining = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
@@ -362,7 +431,7 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
           "bg-gradient-to-t from-[hsl(var(--midnight))] to-[hsl(var(--midnight-light))] border-t border-gold/30 backdrop-blur-xl shadow-2xl transition-all duration-300",
           isExpanded ? "rounded-t-2xl" : ""
         )}>
-          {/* Expanded: playlist or queue view */}
+          {/* Expanded view */}
           {isExpanded && (
             <div className="px-4 pt-2 pb-2">
               {/* Minimize handle */}
@@ -373,7 +442,8 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                 <div className="w-10 h-1 rounded-full bg-muted-foreground/30 group-hover:bg-gold/50 transition-colors" />
                 <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Tap to minimize</span>
               </button>
-              {/* Toggle between playlist and queue */}
+
+              {/* Tab toggles */}
               <div className="flex gap-2 mb-3">
                 <button
                   onClick={() => setShowQueue(false)}
@@ -397,7 +467,7 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
               </div>
 
               {!showQueue ? (
-                <div className="max-h-60 overflow-y-auto space-y-1">
+                <div className="max-h-60 overflow-y-auto space-y-1 scrollbar-thin">
                   {SLEEP_SURAHS.map((track, index) => (
                     <button
                       key={track.id}
@@ -407,14 +477,19 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                         loadAndPlay(index);
                       }}
                       className={cn(
-                        "w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors",
+                        "w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all",
                         index === currentTrackIndex
-                          ? "bg-gold/15 border border-gold/20"
+                          ? "bg-gold/15 border border-gold/20 shadow-sm shadow-gold/5"
                           : "hover:bg-secondary/50"
                       )}
                     >
-                      <span className="w-6 h-6 rounded-full bg-gold/10 text-gold text-xs flex items-center justify-center flex-shrink-0">
-                        {index === currentTrackIndex && isPlaying ? '♪' : index + 1}
+                      <span className={cn(
+                        "w-7 h-7 rounded-full text-xs flex items-center justify-center flex-shrink-0 transition-all",
+                        index === currentTrackIndex && isPlaying
+                          ? "bg-gold text-[hsl(var(--midnight))] animate-pulse"
+                          : "bg-gold/10 text-gold"
+                      )}>
+                        {index === currentTrackIndex && isPlaying ? '♪' : track.surahNumber}
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className={cn(
@@ -431,12 +506,10 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                 </div>
               ) : (
                 <div className="max-h-60 overflow-y-auto space-y-1">
-                  {/* Now playing */}
-                  <div className="p-2.5 rounded-lg bg-gold/10 border border-gold/20 mb-2">
+                  <div className="p-2.5 rounded-xl bg-gold/10 border border-gold/20 mb-2">
                     <p className="text-[10px] text-gold uppercase tracking-wider mb-1">Now Playing</p>
                     <p className="text-sm text-foreground">{currentTrack.name}</p>
                   </div>
-
                   {queue.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-4">
                       Queue is empty. Use the Quran tab to add surahs.
@@ -453,28 +526,16 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                         </div>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           {queueIdx > 0 && (
-                            <button
-                              onClick={() => moveInQueue(queueIdx, queueIdx - 1)}
-                              className="p-1 rounded text-muted-foreground hover:text-foreground"
-                              aria-label="Move up"
-                            >
+                            <button onClick={() => moveInQueue(queueIdx, queueIdx - 1)} className="p-1 rounded text-muted-foreground hover:text-foreground" aria-label="Move up">
                               <ChevronUp className="h-3 w-3" />
                             </button>
                           )}
                           {queueIdx < queue.length - 1 && (
-                            <button
-                              onClick={() => moveInQueue(queueIdx, queueIdx + 1)}
-                              className="p-1 rounded text-muted-foreground hover:text-foreground"
-                              aria-label="Move down"
-                            >
+                            <button onClick={() => moveInQueue(queueIdx, queueIdx + 1)} className="p-1 rounded text-muted-foreground hover:text-foreground" aria-label="Move down">
                               <ChevronDown className="h-3 w-3" />
                             </button>
                           )}
-                          <button
-                            onClick={() => removeFromQueue(queueIdx)}
-                            className="p-1 rounded text-muted-foreground hover:text-destructive"
-                            aria-label="Remove from queue"
-                          >
+                          <button onClick={() => removeFromQueue(queueIdx)} className="p-1 rounded text-muted-foreground hover:text-destructive" aria-label="Remove from queue">
                             <Trash2 className="h-3 w-3" />
                           </button>
                         </div>
@@ -484,17 +545,76 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                 </div>
               )}
 
-              {/* Volume control in expanded view */}
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gold/10">
-                <Volume2 className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                <Slider
-                  value={[volume]}
-                  max={100}
-                  step={1}
-                  onValueChange={handleVolumeChange}
-                  className="flex-1"
-                />
-                <span className="text-[10px] text-muted-foreground w-8 text-right">{volume}%</span>
+              {/* Controls row: Volume + Speed + Sleep Timer */}
+              <div className="mt-3 pt-3 border-t border-gold/10 space-y-3">
+                {/* Volume */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleVolumeChange([volume === 0 ? 80 : 0])}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {volume === 0 ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                  </button>
+                  <Slider value={[volume]} max={100} step={1} onValueChange={handleVolumeChange} className="flex-1" />
+                  <span className="text-[10px] text-muted-foreground w-8 text-right tabular-nums">{volume}%</span>
+                </div>
+
+                {/* Speed + Sleep Timer row */}
+                <div className="flex items-center gap-3">
+                  {/* Playback speed */}
+                  <div className="flex items-center gap-1.5">
+                    <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+                    <div className="flex gap-1">
+                      {SPEED_OPTIONS.map(speed => (
+                        <button
+                          key={speed}
+                          onClick={() => setPlaybackSpeed(speed)}
+                          className={cn(
+                            "text-[10px] px-2 py-0.5 rounded-full transition-colors tabular-nums",
+                            playbackSpeed === speed
+                              ? "bg-gold/20 text-gold font-medium"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {speed}x
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="w-px h-4 bg-gold/10" />
+
+                  {/* Sleep timer */}
+                  <div className="flex items-center gap-1.5">
+                    <Timer className={cn("h-3.5 w-3.5", sleepTimer > 0 ? "text-gold" : "text-muted-foreground")} />
+                    <div className="flex gap-1">
+                      {SLEEP_TIMER_OPTIONS.map(option => (
+                        <button
+                          key={option.value}
+                          onClick={() => setSleepTimer(option.value)}
+                          className={cn(
+                            "text-[10px] px-2 py-0.5 rounded-full transition-colors",
+                            sleepTimer === option.value
+                              ? "bg-gold/20 text-gold font-medium"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sleep timer remaining display */}
+                {sleepTimer > 0 && sleepTimerRemaining > 0 && (
+                  <div className="flex items-center justify-center gap-2">
+                    <Timer className="h-3 w-3 text-gold" />
+                    <span className="text-xs text-gold tabular-nums">
+                      Sleep in {formatTimerRemaining(sleepTimerRemaining)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -546,8 +666,19 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
               className="h-1"
             />
             <div className="flex justify-between mt-1">
-              <span className="text-[10px] text-muted-foreground">{formatTime(progress)}</span>
-              <span className="text-[10px] text-muted-foreground">{formatTime(duration)}</span>
+              <span className="text-[10px] text-muted-foreground tabular-nums">{formatTime(progress)}</span>
+              <div className="flex items-center gap-2">
+                {sleepTimer > 0 && sleepTimerRemaining > 0 && !isExpanded && (
+                  <span className="text-[10px] text-gold tabular-nums flex items-center gap-0.5">
+                    <Timer className="h-2.5 w-2.5" />
+                    {formatTimerRemaining(sleepTimerRemaining)}
+                  </span>
+                )}
+                {playbackSpeed !== 1 && !isExpanded && (
+                  <span className="text-[10px] text-gold tabular-nums">{playbackSpeed}x</span>
+                )}
+                <span className="text-[10px] text-muted-foreground tabular-nums">{formatTime(duration)}</span>
+              </div>
             </div>
           </div>
 
@@ -557,8 +688,17 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex-1 min-w-0 text-left flex items-center gap-2"
             >
-              <span className="w-8 h-8 rounded-lg bg-gold/10 text-gold text-xs font-medium flex items-center justify-center flex-shrink-0">
-                {currentTrack.surahNumber}
+              <span className={cn(
+                "w-9 h-9 rounded-xl text-xs font-semibold flex items-center justify-center flex-shrink-0 transition-all",
+                isPlaying
+                  ? "bg-gradient-to-br from-gold/20 to-gold/5 text-gold border border-gold/20 shadow-sm shadow-gold/10"
+                  : "bg-gold/10 text-gold"
+              )}>
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+                ) : (
+                  currentTrack.surahNumber
+                )}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">{currentTrack.name}</p>
@@ -590,10 +730,22 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
               </button>
               <button
                 onClick={togglePlay}
-                className="p-2.5 rounded-full bg-gold text-[hsl(var(--midnight))] hover:bg-gold/90 transition-colors"
+                className={cn(
+                  "p-2.5 rounded-full transition-all",
+                  isPlaying
+                    ? "bg-gold text-[hsl(var(--midnight))] hover:bg-gold/90 shadow-md shadow-gold/20"
+                    : "bg-gold text-[hsl(var(--midnight))] hover:bg-gold/90"
+                )}
                 aria-label={isPlaying ? 'Pause' : 'Play'}
+                disabled={isLoading}
               >
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
+                {isLoading ? (
+                  <div className="h-4 w-4 border-2 border-[hsl(var(--midnight))]/30 border-t-[hsl(var(--midnight))] rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="h-4 w-4" />
+                ) : (
+                  <Play className="h-4 w-4 ml-0.5" />
+                )}
               </button>
               <button onClick={nextTrack} className="p-1.5 rounded-lg text-foreground hover:bg-secondary/50 transition-colors" aria-label="Next surah">
                 <SkipForward className="h-4 w-4" />
