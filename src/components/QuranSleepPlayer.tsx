@@ -364,7 +364,15 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
         )}>
           {/* Expanded: playlist or queue view */}
           {isExpanded && (
-            <div className="px-4 pt-4 pb-2">
+            <div className="px-4 pt-2 pb-2">
+              {/* Minimize handle */}
+              <button
+                onClick={() => setIsExpanded(false)}
+                className="w-full flex flex-col items-center gap-1 pb-2 mb-2 border-b border-gold/10 group"
+              >
+                <div className="w-10 h-1 rounded-full bg-muted-foreground/30 group-hover:bg-gold/50 transition-colors" />
+                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Tap to minimize</span>
+              </button>
               {/* Toggle between playlist and queue */}
               <div className="flex gap-2 mb-3">
                 <button
