@@ -195,7 +195,7 @@ const Index = () => {
         </div>
 
         {/* Main Content */}
-        <main className="px-6">
+        <main id="main-content" className="px-6" tabIndex={-1}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="w-full mb-6 bg-secondary/50 border border-border p-1 grid grid-cols-6" aria-label="App sections">
               <TabsTrigger
@@ -275,8 +275,9 @@ const Index = () => {
                             alarmsTab?.click();
                           }}
                           className="mt-2 text-xs text-gold/70 hover:text-gold flex items-center gap-1 transition-colors"
+                          aria-label="Go to alarms tab to set Isha alarm reminder"
                         >
-                          <Bell className="h-3 w-3" />
+                          <Bell className="h-3 w-3" aria-hidden />
                           Set Isha alarm reminder
                         </button>
                       )}
@@ -470,8 +471,9 @@ const Index = () => {
                             alarmsTab?.click();
                           }}
                           className="mt-2 text-xs text-gold/70 hover:text-gold flex items-center gap-1 transition-colors"
+                          aria-label={`Go to alarms tab to set ${item.linkedAlarmType === 'fajr' ? 'Fajr' : item.linkedAlarmType === 'tahajjud' ? 'Tahajjud' : 'wake'} alarm`}
                         >
-                          <Bell className="h-3 w-3" />
+                          <Bell className="h-3 w-3" aria-hidden />
                           Set {item.linkedAlarmType === 'fajr' ? 'Fajr' : item.linkedAlarmType === 'tahajjud' ? 'Tahajjud' : 'wake'} alarm
                         </button>
                       )}
@@ -587,7 +589,7 @@ const Index = () => {
                     <button
                       onClick={() => playSurah(index)}
                       className="w-8 h-8 rounded-full bg-gold/10 hover:bg-gold/20 text-gold flex items-center justify-center flex-shrink-0 transition-colors"
-                      aria-label={`Play ${surah.name}`}
+                      aria-label={`Play ${surah.name} - ${surah.description}`}
                     >
                       <Play className="h-3.5 w-3.5 ml-0.5" />
                     </button>
@@ -598,6 +600,7 @@ const Index = () => {
                     <button
                       onClick={() => queueSurah(index)}
                       className="text-[10px] px-2 py-1 rounded-full border border-gold/20 text-gold/70 hover:text-gold hover:border-gold/40 transition-colors flex-shrink-0"
+                      aria-label={`Add ${surah.name} to queue`}
                     >
                       + Queue
                     </button>

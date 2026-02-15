@@ -127,6 +127,7 @@ export function SleepHistoryView({ onBack, onOpenDiary }: SleepHistoryViewProps)
                 'w-full p-4 rounded-xl border text-left flex items-center justify-between',
                 'bg-secondary/20 border-border hover:border-gold/30 transition-colors'
               )}
+              aria-label={`View sleep details for ${new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}${day.sleepRecord?.duration != null ? `, ${formatDuration(day.sleepRecord.duration)} sleep` : ''}`}
             >
               <div className="flex items-center gap-3">
                 <div className="text-left">

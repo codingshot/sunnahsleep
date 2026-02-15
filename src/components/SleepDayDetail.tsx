@@ -135,6 +135,7 @@ export function SleepDayDetail({
                 <button
                   onClick={() => onOpenDiary(day!.date)}
                   className="w-full p-4 rounded-xl bg-secondary/30 border border-border hover:border-gold/30 text-left flex items-center justify-between transition-colors"
+                  aria-label={`View diary entry for ${new Date(day!.date).toLocaleDateString('en-US')}`}
                 >
                   <div className="flex items-center gap-3">
                     <BookOpen className="h-5 w-5 text-gold" />

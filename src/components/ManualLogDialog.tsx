@@ -158,6 +158,8 @@ export function ManualLogDialog({
                 'w-full p-3 rounded-xl border flex items-center gap-3',
                 madeIsha ? 'bg-gold/10 border-gold/40' : 'bg-secondary/30 border-border'
               )}
+              aria-pressed={madeIsha}
+              aria-label={madeIsha ? 'Prayed Isha (click to uncheck)' : 'Mark as prayed Isha'}
             >
               <span className={madeIsha ? 'text-gold' : 'text-muted-foreground'}>
                 {madeIsha ? '✓' : '○'} Prayed Isha
@@ -169,6 +171,8 @@ export function ManualLogDialog({
                 'w-full p-3 rounded-xl border flex items-center gap-3',
                 madeFajr ? 'bg-gold/10 border-gold/40' : 'bg-secondary/30 border-border'
               )}
+              aria-pressed={madeFajr}
+              aria-label={madeFajr ? 'Prayed Fajr (click to uncheck)' : 'Mark as prayed Fajr'}
             >
               <span className={madeFajr ? 'text-gold' : 'text-muted-foreground'}>
                 {madeFajr ? '✓' : '○'} Prayed Fajr
@@ -187,6 +191,8 @@ export function ManualLogDialog({
                     'p-2 rounded-lg border text-center transition-all',
                     quality === opt.value ? 'bg-gold/10 border-gold/40' : 'bg-secondary/30 border-border'
                   )}
+                  aria-pressed={quality === opt.value}
+                  aria-label={`Sleep quality: ${opt.label}`}
                 >
                   <span className="text-xl">{opt.emoji}</span>
                   <p className="text-[10px] text-cream-dim mt-1">{opt.label}</p>

@@ -49,6 +49,8 @@ export function QuranVerseCard({
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full p-5 flex items-center justify-between text-left hover:bg-midnight-light transition-colors"
+        aria-expanded={isExpanded}
+        aria-label={isExpanded ? `Collapse ${title}` : `Expand ${title}`}
       >
         <div className="flex items-center gap-3">
           {icon && (
@@ -127,6 +129,7 @@ export function QuranVerseCard({
                   <button
                     onClick={() => playAudio(verse.audioUrl!, `verse-${verse.ayah}`)}
                     className="absolute top-2 left-2 p-2 rounded-lg bg-gold/10 hover:bg-gold/20 transition-colors"
+                    aria-label={currentAudioId === `verse-${verse.ayah}` && isPlaying ? `Stop playing verse ${verse.ayah}` : `Play verse ${verse.ayah}`}
                   >
                     {currentAudioId === `verse-${verse.ayah}` && isPlaying ? (
                       <VolumeX className="h-4 w-4 text-gold" />

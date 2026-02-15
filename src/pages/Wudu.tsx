@@ -366,6 +366,8 @@ export default function Wudu() {
               onClick={() => setShowKeyboardHelp(prev => !prev)}
               className="p-2 rounded-lg bg-secondary/50 text-muted-foreground hover:text-gold transition-colors"
               title="Keyboard shortcuts (?)"
+              aria-label={showKeyboardHelp ? 'Hide keyboard shortcuts' : 'Show keyboard shortcuts'}
+              aria-expanded={showKeyboardHelp}
             >
               <Keyboard className="h-4 w-4" />
             </button>
@@ -462,6 +464,8 @@ export default function Wudu() {
                     : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
                 )}
                 title={`${step.name} (${step.keyboardShortcut})`}
+                aria-label={`Go to step: ${step.name}`}
+                aria-current={activeStep === step.id ? 'step' : undefined}
               >
                 {completedSteps.includes(step.id) ? '✓' : step.id}
               </button>
@@ -485,6 +489,7 @@ export default function Wudu() {
               <button
                 onClick={() => goToStep(step.id)}
                 className="w-full text-left"
+                aria-label={`View ${step.name} step${completedSteps.includes(step.id) ? ' (completed)' : ''}`}
               >
                 <div className="p-4 flex items-start gap-3">
                   <div className={cn(

@@ -438,6 +438,7 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
               <button
                 onClick={() => setIsExpanded(false)}
                 className="w-full flex flex-col items-center gap-1 pb-2 mb-2 border-b border-gold/10 group"
+                aria-label="Minimize player"
               >
                 <div className="w-10 h-1 rounded-full bg-muted-foreground/30 group-hover:bg-gold/50 transition-colors" />
                 <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Tap to minimize</span>
@@ -451,6 +452,8 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                     "text-xs px-3 py-1 rounded-full transition-colors",
                     !showQueue ? "bg-gold/20 text-gold" : "text-muted-foreground hover:text-foreground"
                   )}
+                  aria-pressed={!showQueue}
+                  aria-label="Show playlist"
                 >
                   Playlist
                 </button>
@@ -460,6 +463,8 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                     "text-xs px-3 py-1 rounded-full transition-colors flex items-center gap-1",
                     showQueue ? "bg-gold/20 text-gold" : "text-muted-foreground hover:text-foreground"
                   )}
+                  aria-pressed={showQueue}
+                  aria-label={`Show queue${queue.length > 0 ? ` (${queue.length} items)` : ''}`}
                 >
                   <ListMusic className="h-3 w-3" />
                   Queue {queue.length > 0 && `(${queue.length})`}
@@ -476,6 +481,7 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                         setProgress(0);
                         loadAndPlay(index);
                       }}
+                      aria-label={`Play ${track.name}`}
                       className={cn(
                         "w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all",
                         index === currentTrackIndex
@@ -552,10 +558,11 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                   <button
                     onClick={() => handleVolumeChange([volume === 0 ? 80 : 0])}
                     className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={volume === 0 ? 'Unmute (currently muted)' : 'Mute'}
                   >
                     {volume === 0 ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                   </button>
-                  <Slider value={[volume]} max={100} step={1} onValueChange={handleVolumeChange} className="flex-1" />
+                  <Slider value={[volume]} max={100} step={1} onValueChange={handleVolumeChange} className="flex-1" aria-label="Volume" />
                   <span className="text-[10px] text-muted-foreground w-8 text-right tabular-nums">{volume}%</span>
                 </div>
 
@@ -575,6 +582,8 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                               ? "bg-gold/20 text-gold font-medium"
                               : "text-muted-foreground hover:text-foreground"
                           )}
+                          aria-pressed={playbackSpeed === speed}
+                          aria-label={`Playback speed ${speed}x`}
                         >
                           {speed}x
                         </button>
@@ -598,6 +607,8 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
                               ? "bg-gold/20 text-gold font-medium"
                               : "text-muted-foreground hover:text-foreground"
                           )}
+                          aria-pressed={sleepTimer === option.value}
+                          aria-label={`Sleep timer: ${option.label}`}
                         >
                           {option.label}
                         </button>
@@ -664,6 +675,7 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
               step={1}
               onValueChange={handleSeek}
               className="h-1"
+              aria-label="Playback position"
             />
             <div className="flex justify-between mt-1">
               <span className="text-[10px] text-muted-foreground tabular-nums">{formatTime(progress)}</span>
@@ -687,6 +699,8 @@ export function QuranSleepPlayer({ isVisible, onClose, command, onCommandHandled
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex-1 min-w-0 text-left flex items-center gap-2"
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? 'Collapse player' : 'Expand player'}
             >
               <span className={cn(
                 "w-9 h-9 rounded-xl text-xs font-semibold flex items-center justify-center flex-shrink-0 transition-all",

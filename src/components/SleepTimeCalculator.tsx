@@ -116,6 +116,7 @@ export function SleepTimeCalculator({
           <button 
             onClick={() => setShowLocationDialog(true)}
             className="w-full p-3 rounded-xl bg-secondary/30 border border-border mb-4 flex items-center justify-between hover:border-gold/30 transition-colors"
+            aria-label={`Change location. Current: ${location.city ? `${location.city}, ${location.country}` : 'not set'}`}
           >
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-gold" />

@@ -235,7 +235,7 @@ export default function Guides() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main id="main-content" className="container mx-auto px-4 py-8 max-w-4xl" tabIndex={-1}>
         {/* Hero Section */}
         <section className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gradient-gold mb-4">

@@ -63,6 +63,7 @@ export function NotificationsDropdown({
           variant="ghost" 
           size="icon" 
           className="relative h-9 w-9 rounded-full bg-secondary/50 hover:bg-secondary border border-border"
+          aria-label={`Alarms and notifications${enabledAlarmsCount > 0 ? ` (${enabledAlarmsCount} active)` : ''}`}
         >
           <Bell className="h-4 w-4 text-gold" />
           {enabledAlarmsCount > 0 && (
@@ -84,6 +85,7 @@ export function NotificationsDropdown({
             <button
               onClick={onRequestNotifications}
               className="text-xs text-gold hover:text-gold/80 transition-colors"
+              aria-label="Enable browser notifications"
             >
               Enable
             </button>
@@ -145,6 +147,7 @@ export function NotificationsDropdown({
                       "p-1 rounded hover:bg-secondary transition-colors",
                       upcoming.alarm.enabled ? "text-gold" : "text-muted-foreground"
                     )}
+                    aria-label={upcoming.alarm.enabled ? `Disable ${upcoming.alarm.name} alarm` : `Enable ${upcoming.alarm.name} alarm`}
                   >
                     {upcoming.alarm.enabled ? (
                       <Bell className="h-3.5 w-3.5" />
@@ -195,6 +198,7 @@ export function NotificationsDropdown({
                         "p-1 rounded hover:bg-secondary transition-colors",
                         alarm.enabled ? "text-gold" : "text-muted-foreground"
                       )}
+                      aria-label={alarm.enabled ? `Disable ${alarm.name} alarm` : `Enable ${alarm.name} alarm`}
                     >
                       {alarm.enabled ? (
                         <Bell className="h-3.5 w-3.5" />
@@ -208,6 +212,7 @@ export function NotificationsDropdown({
                         onDeleteAlarm(alarm.id);
                       }}
                       className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      aria-label={`Delete ${alarm.name} alarm`}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>

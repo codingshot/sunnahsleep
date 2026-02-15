@@ -70,4 +70,19 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes("node_modules")) {
+            if (id.includes("react-dom") || id.includes("react/")) return "vendor-react";
+            if (id.includes("@tanstack/react-query")) return "vendor-query";
+            if (id.includes("@radix-ui") || id.includes("lucide-react")) return "vendor-ui";
+          }
+        },
+      },
+    },
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 600,
+  },
 }));

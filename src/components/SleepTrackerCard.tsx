@@ -175,6 +175,8 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
                       ? 'bg-gold/10 border-gold/40' 
                       : 'bg-secondary/30 border-border hover:border-gold/30'
                   )}
+                  aria-pressed={madeFajr}
+                  aria-label={madeFajr ? 'Prayed Fajr (click to uncheck)' : 'Mark as prayed Fajr'}
                 >
                   <div className={cn(
                     'w-6 h-6 rounded-lg border-2 flex items-center justify-center',
@@ -200,6 +202,8 @@ export function SleepTrackerCard({ onIshaChecked }: SleepTrackerCardProps) {
                             ? 'bg-gold/10 border-gold/40'
                             : 'bg-secondary/30 border-border hover:border-gold/30'
                         )}
+                        aria-pressed={quality === option.value}
+                        aria-label={`Sleep quality: ${option.label}`}
                       >
                         <span className="text-xl">{option.emoji}</span>
                         <p className="text-xs text-cream-dim mt-1">{option.label}</p>

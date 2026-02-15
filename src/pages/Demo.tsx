@@ -187,7 +187,7 @@ export default function Demo() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main id="main-content" className="container mx-auto px-4 py-8 max-w-4xl" tabIndex={-1}>
         {/* Hero Section */}
         <section className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gradient-gold mb-4 font-arabic">
@@ -291,6 +291,8 @@ export default function Demo() {
                     ? 'bg-gold w-8' 
                     : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
                 )}
+                aria-label={`Go to slide ${index + 1}: ${slide.title}`}
+                aria-current={index === currentSlide ? 'true' : undefined}
               />
             ))}
           </div>

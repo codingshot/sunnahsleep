@@ -257,7 +257,7 @@ export default function PropheticSleep() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+      <main id="main-content" className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl" tabIndex={-1}>
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
           <Link to="/" className="hover:text-gold">Home</Link>

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
     
     <!-- Primary Meta Tags -->
     <title>SunnahSleep - Islamic Bedtime Companion | Follow the Prophetic Sleep Routine</title>
@@ -15,6 +15,11 @@
     <meta name="googlebot" content="index, follow" />
     <link rel="canonical" href="https://sunnahsleep.app/" />
     
+    <!-- Preconnect for faster font loading and APIs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://api.aladhan.com" />
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/icon-512.png" />
     <link rel="apple-touch-icon" href="/icon-512.png" />
@@ -243,7 +248,21 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="root">
+      <!-- Instant loading shell for faster FCP - replaced by React on mount -->
+      <noscript>Enable JavaScript to use SunnahSleep</noscript>
+      <div id="loading-shell" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#0f172a 0%,#0a0f1a 100%);font-family:system-ui,-apple-system,sans-serif">
+        <div style="color:#d4af37;font-size:1.5rem;font-weight:600;margin-bottom:0.75rem">SunnahSleep</div>
+        <div style="color:rgba(212,175,55,0.7);font-size:0.875rem;margin-bottom:1rem">Islamic Bedtime Companion</div>
+        <div style="width:20px;height:20px;border:2px solid rgba(212,175,55,0.3);border-top-color:#d4af37;border-radius:50%;animation:loading-spin 0.7s linear infinite" aria-hidden="true"></div>
+      </div>
+    </div>
+    <style>
+      @keyframes loading-spin{to{transform:rotate(360deg)}}
+      .skip-link{position:absolute;top:-100px;left:0;background:#d4af37;color:#0f172a;padding:0.75rem 1rem;z-index:9999;font-weight:600;transition:top 0.2s}
+      .skip-link:focus{top:0;outline:2px solid #d4af37;outline-offset:2px}
+    </style>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
