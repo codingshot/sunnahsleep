@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -8,15 +8,20 @@ interface BackLinkProps {
   className?: string;
 }
 
+/**
+ * Prefer in-app history when available; otherwise go to fallbackTo.
+ * Avoids navigate(-1) sending users off-site after external referrers.
+ */
 export function BackLink({ fallbackTo, label, className }: BackLinkProps) {
   const navigate = useNavigate();
-  const location = useLocation();
 
   return (
     <Link
       to={fallbackTo}
       onClick={(e) => {
-        if (location.key !== 'default') {
+        // history.length > 1 is unreliable cross-browser; use React Router index when present
+        const idx = (window.history.state as { idx?: number } | null)?.idx;
+        if (typeof idx === 'number' && idx > 0) {
           e.preventDefault();
           navigate(-1);
         }

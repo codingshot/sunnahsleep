@@ -1,0 +1,234 @@
+[
+  {
+    "slug": "habibichill",
+    "name": "HabibiChill",
+    "domain": "habibichill.com",
+    "url": "https://habibichill.com",
+    "tagline": "Turn anger into reward",
+    "description": "The Muslim anger and emotional mastery app. Manage anger in real time using Qur'an, Sunnah, and Islamic psychology.",
+    "longDescription": "HabibiChill is the first Muslim anger management PWA — built for the moment rage hits. Emergency Sunnah protocols, dhikr, Qur'an, journaling, and Sabr tracking help you convert emotional struggle into spiritual growth.",
+    "emoji": "🔥",
+    "appType": "PWA",
+    "category": "Wellness",
+    "status": "live",
+    "image": "/logos/habibichill.png",
+    "accent": "from-orange-500/20 to-teal-500/20",
+    "tags": ["anger management", "mental health", "emotional wellness", "sunnah"],
+    "highlights": ["Emergency calm protocol", "Offline PWA", "No account required", "100% private"],
+    "relatedSlugs": ["sunnahsleep", "tryramadan", "praysap"],
+    "featured": true,
+    "socials": {
+      "linkedin": "na"
+    },
+    "stores": {
+      "pwa": "https://habibichill.com",
+      "appStore": "na",
+      "googlePlay": "na",
+      "apk": "na"
+    },
+    "bannerUrl": "/banners/habibichillmeta.png"
+  },
+  {
+    "slug": "sunnahsleep",
+    "name": "SunnahSleep",
+    "domain": "sunnahsleep.com",
+    "url": "https://www.sunnahsleep.com",
+    "tagline": "Cure insomnia with Islam",
+    "description": "Faith-grounded sleep support using prophetic night routines, Qur'an, dhikr, and Sunnah wind-down practices.",
+    "longDescription": "SunnahSleep replaces generic sleep apps with an Islamic approach to rest — guided by prophetic sleep etiquette, calming recitations, and routines rooted in the Sunnah.",
+    "emoji": "🌙",
+    "appType": "Web App",
+    "category": "Wellness",
+    "status": "live",
+    "image": "/logos/sunnahsleep.png",
+    "accent": "from-indigo-500/20 to-slate-500/20",
+    "tags": ["sleep", "insomnia", "wellness", "sunnah"],
+    "highlights": ["Prophetic sleep routines", "Qur'an wind-down", "Insomnia support", "Faith-first design"],
+    "relatedSlugs": ["habibichill", "tryramadan", "praysap"],
+    "featured": true,
+    "socials": {
+      "linkedin": "na"
+    },
+    "stores": {
+      "pwa": "https://sunnahsleep.app/install",
+      "appStore": "https://apps.apple.com/us/app/sunnahsleep/id6760520344",
+      "googlePlay": "na",
+      "apk": "https://sunnahsleep.app/download"
+    },
+    "bannerUrl": "/banners/sunnahsleepmeta.png"
+  },
+  {
+    "slug": "mosquesteps",
+    "name": "MosqueSteps",
+    "domain": "mosquesteps.com",
+    "url": "https://mosquesteps.com",
+    "tagline": "Earn blessings for walking to the mosque",
+    "description": "Track steps to the masjid and turn every walk into worship with spiritual reward framing.",
+    "longDescription": "MosqueSteps motivates consistent mosque attendance by tracking your walk to jama'ah and reframing fitness as ibadah — every step toward the masjid counts.",
+    "emoji": "🕌",
+    "appType": "Mobile App",
+    "category": "Worship",
+    "status": "live",
+    "image": "/logos/mosquesteps.png",
+    "accent": "from-emerald-500/20 to-teal-500/20",
+    "tags": ["mosque", "fitness", "worship", "community"],
+    "highlights": ["Step tracking to masjid", "Reward framing", "Community motivation", "Daily consistency"],
+    "relatedSlugs": ["mosquelist", "praysap", "tryramadan"],
+    "featured": true,
+    "socials": {
+      "linkedin": "na"
+    },
+    "stores": {
+      "pwa": "https://mosquesteps.com",
+      "appStore": "na",
+      "googlePlay": "na",
+      "apk": "na"
+    },
+    "bannerUrl": "na"
+  },
+  {
+    "slug": "mosquelist",
+    "name": "MosqueList",
+    "domain": "mosquelist.com",
+    "url": "https://mosquelist.com",
+    "tagline": "Explore the world's most magnificent mosques",
+    "description": "Discover holy sites and Islamic history through magnificent mosques around the world.",
+    "longDescription": "MosqueList is a curated directory of the world's most breathtaking masajid — architecture, history, and travel inspiration for Muslims and explorers alike.",
+    "emoji": "🗺️",
+    "appType": "Directory",
+    "category": "Discovery",
+    "status": "live",
+    "image": "/logos/mosquelist.png",
+    "accent": "from-amber-500/20 to-orange-500/20",
+    "tags": ["mosques", "travel", "islamic history", "architecture"],
+    "highlights": ["Global mosque directory", "Architecture & history", "Travel inspiration", "Curated collections"],
+    "relatedSlugs": ["mosquesteps", "praysap", "shariacheck"],
+    "featured": true,
+    "socials": {
+      "linkedin": "na"
+    },
+    "stores": {
+      "pwa": "https://mosquelist.com",
+      "appStore": "na",
+      "googlePlay": "na",
+      "apk": "na"
+    },
+    "bannerUrl": "/banners/mosquelistmeta.jpeg"
+  },
+  {
+    "slug": "tryramadan",
+    "name": "TryRamadan",
+    "domain": "tryramadan.app",
+    "url": "https://tryramadan.app",
+    "tagline": "Fast like a Muslim",
+    "description": "Experience Ramadan fasting with guided support for non-Muslims and new Muslims.",
+    "longDescription": "TryRamadan welcomes curious learners and reverts into the Ramadan experience — spiritual purpose, daily rhythm, etiquette, and community connection without overwhelm.",
+    "emoji": "🌙",
+    "appType": "Web App",
+    "category": "Worship",
+    "status": "live",
+    "image": "/logos/tryramadan.png",
+    "accent": "from-purple-500/20 to-indigo-500/20",
+    "tags": ["ramadan", "fasting", "dawah", "education"],
+    "highlights": ["Beginner-friendly fasting", "Spiritual education", "Daily rhythm guides", "Welcoming dawah"],
+    "relatedSlugs": ["habibichill", "sunnahsleep", "praysap"],
+    "featured": true,
+    "socials": {
+      "linkedin": "na"
+    },
+    "stores": {
+      "pwa": "https://tryramadan.app",
+      "appStore": "na",
+      "googlePlay": "na",
+      "apk": "na"
+    },
+    "bannerUrl": "na"
+  },
+  {
+    "slug": "shariacheck",
+    "name": "ShariaCheck",
+    "domain": "shariacheck.com",
+    "url": "https://shariacheck.com",
+    "tagline": "Check if products and businesses are halal",
+    "description": "Verify whether products and businesses align with Islamic principles — and understand why.",
+    "longDescription": "ShariaCheck gives Muslims transparent halal commerce decisions — not just labels, but clear reasoning on whether products and businesses meet Islamic standards.",
+    "emoji": "✅",
+    "appType": "Tool",
+    "category": "Commerce",
+    "status": "live",
+    "image": "/logos/shariacheck.png",
+    "accent": "from-green-500/20 to-emerald-500/20",
+    "tags": ["halal", "commerce", "sharia", "consumer"],
+    "highlights": ["Halal verification", "Clear reasoning", "Business checks", "Consumer confidence"],
+    "relatedSlugs": ["mosquelist", "muslimname", "habibichill"],
+    "featured": true,
+    "socials": {
+      "linkedin": "na"
+    },
+    "stores": {
+      "pwa": "https://shariacheck.com",
+      "appStore": "na",
+      "googlePlay": "na",
+      "apk": "na"
+    },
+    "bannerUrl": "na"
+  },
+  {
+    "slug": "muslimname",
+    "name": "MuslimName",
+    "domain": "muslimname.me",
+    "url": "https://muslimname.me",
+    "tagline": "Find your Muslim name",
+    "description": "Discover meaningful Islamic names with origins, meanings, and pronunciation.",
+    "longDescription": "MuslimName helps converts, parents, and seekers find names rooted in Islamic tradition — with meanings, origins, and pronunciation guides.",
+    "emoji": "📛",
+    "appType": "Tool",
+    "category": "Identity",
+    "status": "live",
+    "image": "/logos/muslimname.png",
+    "accent": "from-rose-500/20 to-pink-500/20",
+    "tags": ["names", "identity", "converts", "culture"],
+    "highlights": ["Meaning & origin", "Pronunciation guides", "Convert-friendly", "Curated collections"],
+    "relatedSlugs": ["tryramadan", "shariacheck", "habibichill"],
+    "featured": true,
+    "socials": {
+      "linkedin": "na"
+    },
+    "stores": {
+      "pwa": "https://muslimname.me",
+      "appStore": "na",
+      "googlePlay": "na",
+      "apk": "na"
+    },
+    "bannerUrl": "na"
+  },
+  {
+    "slug": "praysap",
+    "name": "PRAYSAP",
+    "domain": "praysap.com",
+    "url": "https://praysap.com",
+    "tagline": "Pray anywhere — coordinate salah IRL",
+    "description": "The only app built for Muslims to coordinate prayer in real life — find partners and organize jama'ah.",
+    "longDescription": "PRAYSAP solves a real gap: coordinating salah in person. Find prayer partners nearby, organize jama'ah, and build community around the five daily prayers.",
+    "emoji": "🤲",
+    "appType": "Mobile App",
+    "category": "Worship",
+    "status": "live",
+    "image": "/logos/PRAYSAP.png",
+    "accent": "from-cyan-500/20 to-blue-500/20",
+    "tags": ["prayer", "salah", "community", "coordination"],
+    "highlights": ["IRL prayer coordination", "Jama'ah finder", "Community building", "Pray anywhere"],
+    "relatedSlugs": ["mosquesteps", "mosquelist", "habibichill"],
+    "featured": true,
+    "socials": {
+      "linkedin": "https://www.linkedin.com/company/praysap"
+    },
+    "stores": {
+      "pwa": "https://praysap.com",
+      "appStore": "na",
+      "googlePlay": "https://play.google.com/store/apps/details?id=com.praysapapp",
+      "apk": "na"
+    },
+    "bannerUrl": "/banners/twitterbannerpraysapnew.jpeg"
+  }
+]

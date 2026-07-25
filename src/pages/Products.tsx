@@ -1,69 +1,67 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Package } from 'lucide-react';
 import { BackLink } from '@/components/BackLink';
 import { Footer } from '@/components/Footer';
 import { ProductCard } from '@/components/products/ProductCard';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import {
+  getAllUmmahProducts,
   getProductsIndexCanonical,
-  loadUmmahProducts,
-  type UmmahProduct,
 } from '@/lib/ummahProducts';
 
 export default function Products() {
-  const [products, setProducts] = useState<UmmahProduct[]>([]);
+  const products = getAllUmmahProducts();
 
-  useEffect(() => {
-    loadUmmahProducts().then(setProducts).catch(() => setProducts([]));
-  }, []);
+  const pageMeta = useMemo(
+    () => ({
+      title: 'Ummah.Build Products — Islamic Apps & Tools for Muslims | SunnahSleep',
+      description:
+        'Explore Muslim apps and tools by Ummah.Build — SunnahSleep, HabibiChill, PRAYSAP, TryRamadan, MosqueSteps, MosqueList, ShariaCheck, MuslimName, and more. Faith-first technology for the Ummah.',
+      canonical: getProductsIndexCanonical(),
+      keywords: [
+        'Ummah.Build products',
+        'Islamic apps',
+        'Muslim apps',
+        'halal technology',
+        'SunnahSleep',
+        'HabibiChill',
+        'PRAYSAP',
+        'TryRamadan',
+        'MosqueSteps',
+      ],
+      jsonLd: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'Ummah.Build Products',
+          description:
+            'Faith-first Muslim apps and tools built by Ummah.Build — worship, wellness, discovery, and daily life.',
+          url: getProductsIndexCanonical(),
+          mainEntity: {
+            '@type': 'ItemList',
+            itemListElement: products.map((product, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              url: `https://sunnahsleep.app/product/${product.slug}`,
+              name: product.name,
+            })),
+          },
+          publisher: { '@type': 'Organization', name: 'Ummah.Build', url: 'https://ummah.build' },
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'SunnahSleep', item: 'https://sunnahsleep.app/' },
+            { '@type': 'ListItem', position: 2, name: 'Products', item: getProductsIndexCanonical() },
+          ],
+        },
+      ],
+    }),
+    [products],
+  );
 
-  usePageMeta({
-    title: 'Ummah.Build Products — Islamic Apps & Tools for Muslims | SunnahSleep',
-    description:
-      'Explore Muslim apps and tools by Ummah.Build — SunnahSleep, HabibiChill, PRAYSAP, TryRamadan, MosqueSteps, MosqueList, ShariaCheck, MuslimName, and more. Faith-first technology for the Ummah.',
-    canonical: getProductsIndexCanonical(),
-    keywords: [
-      'Ummah.Build products',
-      'Islamic apps',
-      'Muslim apps',
-      'halal technology',
-      'SunnahSleep',
-      'HabibiChill',
-      'PRAYSAP',
-      'TryRamadan',
-      'MosqueSteps',
-    ],
-    jsonLd: products.length
-      ? [
-          {
-            '@context': 'https://schema.org',
-            '@type': 'CollectionPage',
-            name: 'Ummah.Build Products',
-            description:
-              'Faith-first Muslim apps and tools built by Ummah.Build — worship, wellness, discovery, and daily life.',
-            url: getProductsIndexCanonical(),
-            mainEntity: {
-              '@type': 'ItemList',
-              itemListElement: products.map((product, index) => ({
-                '@type': 'ListItem',
-                position: index + 1,
-                url: `https://sunnahsleep.app/product/${product.slug}`,
-                name: product.name,
-              })),
-            },
-            publisher: { '@type': 'Organization', name: 'Ummah.Build', url: 'https://ummah.build' },
-          },
-          {
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'SunnahSleep', item: 'https://sunnahsleep.app/' },
-              { '@type': 'ListItem', position: 2, name: 'Products', item: getProductsIndexCanonical() },
-            ],
-          },
-        ]
-      : undefined,
-  });
+  usePageMeta(pageMeta);
 
   return (
     <div className="min-h-screen bg-gradient-night islamic-pattern">
@@ -91,10 +89,6 @@ export default function Products() {
             <ProductCard key={product.slug} product={product} />
           ))}
         </div>
-
-        {products.length === 0 && (
-          <p className="text-center text-muted-foreground py-16">Loading products…</p>
-        )}
       </div>
 
       <Footer />

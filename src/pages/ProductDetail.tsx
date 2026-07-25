@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
 import { BackLink } from '@/components/BackLink';
@@ -13,22 +13,16 @@ import {
   getProductsIndexCanonical,
   getRelatedProducts,
   isValidProductLink,
-  loadUmmahProducts,
-  type UmmahProduct,
+  UMMAH_PRODUCTS,
 } from '@/lib/ummahProducts';
 
 const BASE_URL = 'https://sunnahsleep.app';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const [products, setProducts] = useState<UmmahProduct[]>([]);
-  const product = slug ? getProductBySlug(products, slug) : undefined;
-  const related = product ? getRelatedProducts(products, product) : [];
+  const product = slug ? getProductBySlug(slug) : undefined;
+  const related = product ? getRelatedProducts(product) : [];
   const links = product ? getProductLinks(product) : [];
-
-  useEffect(() => {
-    loadUmmahProducts().then(setProducts).catch(() => setProducts([]));
-  }, []);
 
   const canonical = product ? getProductCanonical(product.slug) : undefined;
   const ogImage = product && isValidProductLink(product.bannerUrl)
@@ -37,63 +31,72 @@ export default function ProductDetail() {
       ? `${BASE_URL}${product.image}`
       : undefined;
 
-  usePageMeta(
-    product
-      ? {
-          title: `${product.name} — ${product.tagline} | Ummah.Build Product`,
-          description: `${product.description} Learn more about ${product.name} on ${product.domain}.`,
-          canonical,
-          ogTitle: `${product.name} — ${product.tagline}`,
-          ogDescription: product.longDescription,
-          ogImage,
-          keywords: [product.name, product.domain, ...product.tags, 'Ummah.Build', product.category],
-          jsonLd: [
-            {
-              '@context': 'https://schema.org',
-              '@type': 'SoftwareApplication',
-              name: product.name,
-              description: product.longDescription,
-              url: product.slug === 'sunnahsleep' ? BASE_URL : product.url,
-              applicationCategory: product.category,
-              operatingSystem: product.appType,
-              image: ogImage,
-              offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-              author: { '@type': 'Organization', name: 'Ummah.Build', url: 'https://ummah.build' },
-              publisher: { '@type': 'Organization', name: 'Ummah.Build', url: 'https://ummah.build' },
-            },
-            {
-              '@context': 'https://schema.org',
-              '@type': 'BreadcrumbList',
-              itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'SunnahSleep', item: `${BASE_URL}/` },
-                { '@type': 'ListItem', position: 2, name: 'Products', item: getProductsIndexCanonical() },
-                { '@type': 'ListItem', position: 3, name: product.name, item: canonical },
-              ],
-            },
-          ],
-        }
-      : null,
+  const pageMeta = useMemo(
+    () =>
+      product
+        ? {
+            title: `${product.name} — ${product.tagline} | Ummah.Build Product`,
+            description: `${product.description} Learn more about ${product.name} on ${product.domain}.`,
+            canonical,
+            ogTitle: `${product.name} — ${product.tagline}`,
+            ogDescription: product.longDescription,
+            ogImage,
+            keywords: [product.name, product.domain, ...product.tags, 'Ummah.Build', product.category],
+            jsonLd: [
+              {
+                '@context': 'https://schema.org',
+                '@type': 'SoftwareApplication',
+                name: product.name,
+                description: product.longDescription,
+                url: product.slug === 'sunnahsleep' ? BASE_URL : product.url,
+                applicationCategory: product.category,
+                operatingSystem: product.appType,
+                image: ogImage,
+                offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+                author: { '@type': 'Organization', name: 'Ummah.Build', url: 'https://ummah.build' },
+                publisher: { '@type': 'Organization', name: 'Ummah.Build', url: 'https://ummah.build' },
+              },
+              {
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                  { '@type': 'ListItem', position: 1, name: 'SunnahSleep', item: `${BASE_URL}/` },
+                  { '@type': 'ListItem', position: 2, name: 'Products', item: getProductsIndexCanonical() },
+                  { '@type': 'ListItem', position: 3, name: product.name, item: canonical },
+                ],
+              },
+            ],
+          }
+        : {
+            title: 'Product Not Found | SunnahSleep',
+            description: 'This Ummah.Build product could not be found.',
+            noIndex: true,
+          },
+    [product, canonical, ogImage],
   );
 
-  if (products.length > 0 && slug && !product) {
-    return (
-      <div className="min-h-screen bg-gradient-night flex items-center justify-center px-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Product Not Found</h1>
-          <BackLink fallbackTo="/products" label="Back to Products" />
-        </div>
-      </div>
-    );
-  }
+  usePageMeta(pageMeta);
 
-  if (!product) {
+  if (!slug || !product) {
     return (
-      <div className="min-h-screen bg-gradient-night islamic-pattern">
-        <div className="max-w-4xl mx-auto px-6 py-10">
-          <BackLink fallbackTo="/products" label="Back" className="mb-8" />
-          <div className="flex items-center justify-center py-24">
-            <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
-          </div>
+      <div className="min-h-screen bg-gradient-night islamic-pattern flex items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-foreground mb-3">Product Not Found</h1>
+          <p className="text-cream-dim text-sm mb-6">
+            {slug
+              ? `No product matches “${decodeURIComponent(slug)}”.`
+              : 'Missing product in the URL.'}
+            {' '}Browse all Ummah.Build products instead.
+          </p>
+          <BackLink fallbackTo="/products" label="Back to Products" />
+          {UMMAH_PRODUCTS.length > 0 && (
+            <p className="mt-8 text-xs text-muted-foreground">
+              Try{' '}
+              <Link to={`/product/${UMMAH_PRODUCTS[0].slug}`} className="text-gold hover:underline">
+                {UMMAH_PRODUCTS[0].name}
+              </Link>
+            </p>
+          )}
         </div>
       </div>
     );

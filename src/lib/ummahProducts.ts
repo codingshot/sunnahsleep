@@ -1,3 +1,5 @@
+import productsData from '@/data/ummah-products.json';
+
 export interface UmmahProductStores {
   pwa: string;
   appStore: string;
@@ -40,31 +42,34 @@ export interface ProductLink {
 
 const BASE_URL = 'https://sunnahsleep.app';
 
-let productsCache: UmmahProduct[] | null = null;
+/** Canonical product list — bundled so client navigations never hang on fetch. */
+export const UMMAH_PRODUCTS: UmmahProduct[] = productsData as UmmahProduct[];
 
 export function isValidProductLink(url: string | undefined): url is string {
   return Boolean(url && url !== 'na');
 }
 
+/** @deprecated Prefer UMMAH_PRODUCTS — kept for callers that expect a Promise. */
 export async function loadUmmahProducts(): Promise<UmmahProduct[]> {
-  if (productsCache) return productsCache;
-  const response = await fetch('/ummah-products.json');
-  if (!response.ok) throw new Error('Failed to load Ummah.Build products');
-  productsCache = (await response.json()) as UmmahProduct[];
-  return productsCache;
+  return UMMAH_PRODUCTS;
 }
 
-export function getProductBySlug(products: UmmahProduct[], slug: string): UmmahProduct | undefined {
-  return products.find((product) => product.slug === slug);
+export function getAllUmmahProducts(): UmmahProduct[] {
+  return UMMAH_PRODUCTS;
 }
 
-export function getFeaturedProducts(products: UmmahProduct[]): UmmahProduct[] {
+export function getProductBySlug(slug: string, products: UmmahProduct[] = UMMAH_PRODUCTS): UmmahProduct | undefined {
+  const normalized = decodeURIComponent(slug).trim().toLowerCase();
+  return products.find((product) => product.slug.toLowerCase() === normalized);
+}
+
+export function getFeaturedProducts(products: UmmahProduct[] = UMMAH_PRODUCTS): UmmahProduct[] {
   return products.filter((product) => product.featured);
 }
 
-export function getRelatedProducts(products: UmmahProduct[], product: UmmahProduct): UmmahProduct[] {
+export function getRelatedProducts(product: UmmahProduct, products: UmmahProduct[] = UMMAH_PRODUCTS): UmmahProduct[] {
   return product.relatedSlugs
-    .map((slug) => getProductBySlug(products, slug))
+    .map((slug) => getProductBySlug(slug, products))
     .filter((item): item is UmmahProduct => Boolean(item));
 }
 

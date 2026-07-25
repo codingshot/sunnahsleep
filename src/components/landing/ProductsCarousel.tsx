@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import {
@@ -9,16 +8,10 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { ProductCard } from '@/components/products/ProductCard';
-import { getFeaturedProducts, loadUmmahProducts, type UmmahProduct } from '@/lib/ummahProducts';
+import { getFeaturedProducts } from '@/lib/ummahProducts';
 
 export function ProductsCarousel() {
-  const [products, setProducts] = useState<UmmahProduct[]>([]);
-
-  useEffect(() => {
-    loadUmmahProducts()
-      .then((items) => setProducts(getFeaturedProducts(items)))
-      .catch(() => setProducts([]));
-  }, []);
+  const products = getFeaturedProducts();
 
   if (products.length === 0) return null;
 

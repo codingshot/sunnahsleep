@@ -1,7 +1,22 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import fs from "fs";
 import { VitePWA } from "vite-plugin-pwa";
+
+/** Keep public/ummah-products.json in sync with the bundled source of truth. */
+function syncUmmahProductsJson() {
+  return {
+    name: "sync-ummah-products-json",
+    buildStart() {
+      const src = path.resolve(__dirname, "src/data/ummah-products.json");
+      const dest = path.resolve(__dirname, "public/ummah-products.json");
+      if (fs.existsSync(src)) {
+        fs.copyFileSync(src, dest);
+      }
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -13,6 +28,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
+    syncUmmahProductsJson(),
     react(),
     VitePWA({
       registerType: "autoUpdate",
